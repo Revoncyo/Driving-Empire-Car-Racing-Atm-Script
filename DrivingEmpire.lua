@@ -17,7 +17,7 @@
 -- =============================================================================
 -- Bu link sadece kopyalamak içindir, kontrol için kullanılmaz.
 local GetKeyLink = "https://wansstudioskeyal.wuaze.com/?pass=WansSecretPass2026" 
-local ArkaPlanGorseli = "rbxassetid://135213223432744" 
+local ArkaPlanGorseli = "rbxassetid://83271711620088" 
 
 -- =============================================================================
 -- DEĞİŞKENLER VE SERVİSLER
