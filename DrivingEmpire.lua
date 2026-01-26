@@ -14,7 +14,7 @@
 -- 🔒 AYARLAR (DÜZELTİLDİ)
 -- =============================================================================
 -- Script bu linke "Bu key doğru mu?" diye soracak:
-local VerifyLink = "https://wansstudioskeyal.wuaze.com/key.php?action=check&k="
+local VerifyLink = "https://wansstudioskeyal.wuaze.com/key.php?action=generate"
 
 -- Kullanıcı "Key Al" butonuna basınca kopyalanacak link (Linkvertise):
 local GetKeyLink = "https://linkvertise.com/3041148/6gmLZTgCNaVc?o=sharing" 
