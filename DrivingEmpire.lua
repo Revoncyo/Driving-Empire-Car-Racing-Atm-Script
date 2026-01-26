@@ -6,17 +6,17 @@
    ░░██▒██▓  ▓█   ▓██▒▒██░   ▓██░▒██████▒▒
    ░ ▓░▒ ▒   ▒▒   ▓▒█░░ ▒░   ▒ ▒ ▒ ▒▓▒ ▒ ░
    
-   Project: Wans Studios Hub (Police Fix)
+   Project: Wans Studios Hub (Offline Key Logic)
    Game: Driving Empire
-   Version: 12.8 (Arrest & List Refresh Fix)
+   Version: 14.0 (Hourly System)
    Developer: Wans Studios
 ]]
 
 -- =============================================================================
 -- 🔒 AYARLAR
 -- =============================================================================
-local KeyLink = "https://pastebin.com/raw/uZyYR60q" 
-local GetKeyLink = "https://discord.gg/mX4EngC6pw" 
+-- Bu link sadece kopyalamak içindir, kontrol için kullanılmaz.
+local GetKeyLink = "https://linkvertise.com/3041148/6gmLZTgCNaVc?o=sharing" 
 local ArkaPlanGorseli = "rbxassetid://135213223432744" 
 
 -- =============================================================================
@@ -32,6 +32,27 @@ local Players = game:GetService("Players")
 local MainFrameRef = nil 
 
 -- =============================================================================
+-- KEY DOĞRULAMA ALGORİTMASI (SAATLİK - SİTE İLE AYNI)
+-- =============================================================================
+local function GetCorrectKey()
+    -- Roblox sunucu saati UTC'dir. Türkiye saati UTC+3'tür.
+    local TurkiyeZamani = os.time() + (3 * 3600)
+    
+    local Gun = os.date("!%d", TurkiyeZamani) -- Gün
+    local Ay = os.date("!%m", TurkiyeZamani)  -- Ay
+    local Yil = os.date("!%Y", TurkiyeZamani) -- Yıl
+    local Saat = os.date("!%H", TurkiyeZamani) -- Saat (00-23)
+    
+    -- PHP Sitesindeki Formül: (Gün * Ay * Yıl) + (Saat * 99) + 1453
+    local GizliSayi = 1453
+    local Hesap = (tonumber(Gun) * tonumber(Ay) * tonumber(Yil)) + (tonumber(Saat) * 99) + GizliSayi
+    
+    local GercekKey = "WANS-" .. tostring(Hesap)
+    
+    return GercekKey
+end
+
+-- =============================================================================
 -- DİL SİSTEMİ
 -- =============================================================================
 local CurrentLang = "English" 
@@ -39,7 +60,7 @@ local UIElements = {}
 
 local Lang = {
     English = {
-        Title = "Driving Empire", Dev = "Developer: Wans Studios", Ver = "Version: 12.8 (Police Fix)",
+        Title = "Driving Empire", Dev = "Developer: Wans Studios", Ver = "Version: 14.0 (Hourly)",
         CloseKey = "Toggle: 'K' or Button", 
         DiscordBtn = "Copy Discord Link", Copied = "Copied!", DiscordMsg = "Discord link copied.",
         LangSel = "Language / Dil",
@@ -57,10 +78,10 @@ local Lang = {
         ESP = "Player ESP", VehESP = "Vehicle ESP",
         
         KeyTitle = "Wans Security", KeySub = "Enter Key", KeyPlace = "Paste Key Here...", KeyBtn = "Login", KeyGet = "Get Key",
-        KeyCheck = "Checking...", KeySuccess = "SUCCESS!", KeyFail = "INVALID!", KeyErr = "Error!"
+        KeyCheck = "Checking...", KeySuccess = "ACCESS GRANTED!", KeyFail = "INVALID / EXPIRED KEY!", KeyErr = "Error!"
     },
     Turkish = {
-        Title = "Driving Empire", Dev = "Geliştirici: Wans Studios", Ver = "Sürüm: 12.8 (Polis Düzeltme)",
+        Title = "Driving Empire", Dev = "Geliştirici: Wans Studios", Ver = "Sürüm: 14.0 (Saatlik)",
         CloseKey = "Gizleme: 'K' veya Buton", 
         DiscordBtn = "Discord Kopyala", Copied = "Kopyalandı!", DiscordMsg = "Discord kopyalandı.",
         LangSel = "Language / Dil",
@@ -78,7 +99,7 @@ local Lang = {
         ESP = "Oyuncu ESP", VehESP = "Araç ESP",
         
         KeyTitle = "Wans Güvenlik", KeySub = "Key Giriniz", KeyPlace = "Key...", KeyBtn = "Giriş", KeyGet = "Key Al",
-        KeyCheck = "Kontrol...", KeySuccess = "BAŞARILI!", KeyFail = "HATALI!", KeyErr = "Hata!"
+        KeyCheck = "Kontrol...", KeySuccess = "GİRİŞ ONAYLANDI!", KeyFail = "HATALI / SÜRESİ DOLMUŞ!", KeyErr = "Hata!"
     }
 }
 
@@ -195,12 +216,9 @@ local function CreateUniversalButton()
 end
 
 -- =============================================================================
--- KEY SİSTEMİ
+-- KEY SİSTEMİ (OFFLINE MANTIK - GÜNCELLENDİ)
 -- =============================================================================
 local function StartKeySystem(OnSuccess)
-    -- Bypass Kontrolü (Hızlı test için)
-    -- OnSuccess() return 
-
     local KeyGui = Instance.new("ScreenGui")
     KeyGui.Name = "WansKeySystem"
     KeyGui.Parent = CoreGui
@@ -251,30 +269,34 @@ local function StartKeySystem(OnSuccess)
 
     local EnterBtn = CreateBtn("KeyBtn", UDim2.new(0.1, 0, 0.55, 0), function()
         local InputKey = KeyBox.Text
-        InputKey = string.gsub(InputKey, "^%s*(.-)%s*$", "%1")
-        if InputKey == "" then KeyBox.PlaceholderText = "Empty Key!"; return end
-        KeyBox.Text = GetText("KeyCheck")
+        InputKey = string.gsub(InputKey, "^%s*(.-)%s*$", "%1") -- Boşlukları sil
         
-        local BackupKey = "WANS-2024"
-        if InputKey == BackupKey then
-            KeyBox.Text = GetText("KeySuccess"); KeyBox.TextColor3 = Color3.fromRGB(0, 255, 0)
+        if InputKey == "" then KeyBox.PlaceholderText = "Empty Key!"; return end
+        
+        KeyBox.Text = GetText("KeyCheck")
+        KeyBox.TextColor3 = Color3.new(0,0,0)
+        
+        -- Yapay bekleme (Profesyonel dursun diye)
+        task.wait(0.5)
+
+        -- Backup Key (WANS-DEV)
+        if InputKey == "WANS-DEV" then
+            KeyBox.Text = "DEV MODE"; KeyBox.TextColor3 = Color3.fromRGB(0, 255, 0)
             task.wait(1); KeyGui:Destroy(); OnSuccess(); return
         end
 
-        task.spawn(function()
-            local Success, Response = pcall(function() return game:HttpGet(KeyLink, true) end)
-            if Success then
-                local RealKey = string.gsub(Response, "^%s*(.-)%s*$", "%1")
-                if InputKey == RealKey then
-                    KeyBox.Text = GetText("KeySuccess"); KeyBox.TextColor3 = Color3.fromRGB(0, 255, 0)
-                    task.wait(1); KeyGui:Destroy(); OnSuccess()
-                else
-                    KeyBox.Text = ""; KeyBox.PlaceholderText = GetText("KeyFail"); task.wait(1); KeyBox.PlaceholderText = GetText("KeyPlace")
-                end
-            else
-                KeyBox.Text = GetText("KeyErr")
-            end
-        end)
+        -- KONTROL ANI (OFFLINE LOGIC)
+        -- Siteye bağlanmadan hesaplama yapar. Hata verme şansı 0'dır.
+        local DogruKey = GetCorrectKey()
+
+        if InputKey == DogruKey then
+            KeyBox.Text = GetText("KeySuccess"); KeyBox.TextColor3 = Color3.fromRGB(0, 255, 0)
+            task.wait(1); KeyGui:Destroy(); OnSuccess()
+        else
+            KeyBox.Text = GetText("KeyFail"); KeyBox.TextColor3 = Color3.fromRGB(255, 0, 0)
+            print("WANS DEBUG: Girdiğin Key: " .. InputKey .. " | Doğru Key: " .. DogruKey) -- F9'dan bakabilirsin
+            task.wait(1.5); KeyBox.Text = InputKey; KeyBox.TextColor3 = Color3.new(0,0,0)
+        end
     end)
 
     CreateBtn("KeyGet", UDim2.new(0.52, 0, 0.55, 0), function()
@@ -285,7 +307,7 @@ local function StartKeySystem(OnSuccess)
 end
 
 -- =============================================================================
--- ANA SCRİPT 
+-- ANA SCRİPT (HİÇBİR ŞEY DEĞİŞTİRİLMEDİ)
 -- =============================================================================
 local function LoadMainScript()
     local function PlayIntro()
@@ -387,37 +409,15 @@ local function LoadMainScript()
             local CurrentOption = Instance.new("TextButton", DropFrame); CurrentOption.Position = UDim2.new(0.6, 0, 0, 5); CurrentOption.Size = UDim2.new(0.38, 0, 0, 25); CurrentOption.BackgroundColor3 = Color3.new(1,1,1); CurrentOption.BorderColor3 = Color3.new(0,0,0); CurrentOption.BorderSizePixel = 2; CurrentOption.Font = Enum.Font.Code; CurrentOption.Text = Default; CurrentOption.TextColor3 = Color3.new(0,0,0); CurrentOption.TextSize = 11
             local ListFrame = Instance.new("ScrollingFrame", DropFrame); ListFrame.Position = UDim2.new(0, 0, 0, 40); ListFrame.Size = UDim2.new(1, 0, 0, 100); ListFrame.BackgroundTransparency = 1; ListFrame.BorderSizePixel = 0; ListFrame.ScrollBarThickness = 2; local ListLayout = Instance.new("UIListLayout", ListFrame); ListLayout.Padding = UDim.new(0, 2)
             local Expanded = false; CurrentOption.MouseButton1Click:Connect(function() Expanded = not Expanded; DropFrame:TweenSize(Expanded and UDim2.new(1, -5, 0, 150) or UDim2.new(1, -5, 0, 35), "Out", "Quad", 0.2) end)
-            
-            -- Dropdown seçeneklerini dinamik olarak güncellemek için listeyi temizleyip yeniden oluşturan fonksiyon
             local function RefreshList()
-                 for _, child in ipairs(ListFrame:GetChildren()) do
-                    if child:IsA("TextButton") then child:Destroy() end
-                 end
-                 -- Eğer Options bir fonksiyon ise çağır (dinamik liste), değilse tabloyu kullan
+                 for _, child in ipairs(ListFrame:GetChildren()) do if child:IsA("TextButton") then child:Destroy() end end
                  local currentOptions = type(Options) == "function" and Options() or Options
                  for _, opt in ipairs(currentOptions) do 
-                    local Btn = Instance.new("TextButton", ListFrame)
-                    Btn.Size = UDim2.new(1, -10, 0, 25)
-                    Btn.BackgroundColor3 = Color3.new(0.9, 0.9, 0.9)
-                    Btn.Text = opt
-                    Btn.TextColor3 = Color3.new(0,0,0)
-                    Btn.Font = UIConfig.Font
-                    Btn.TextSize = 11
-                    Btn.MouseButton1Click:Connect(function() 
-                        CurrentOption.Text = opt
-                        Expanded = false
-                        DropFrame:TweenSize(UDim2.new(1, -5, 0, 35), "Out", "Quad", 0.2)
-                        pcall(Callback, opt) 
-                    end) 
+                    local Btn = Instance.new("TextButton", ListFrame); Btn.Size = UDim2.new(1, -10, 0, 25); Btn.BackgroundColor3 = Color3.new(0.9, 0.9, 0.9); Btn.Text = opt; Btn.TextColor3 = Color3.new(0,0,0); Btn.Font = UIConfig.Font; Btn.TextSize = 11
+                    Btn.MouseButton1Click:Connect(function() CurrentOption.Text = opt; Expanded = false; DropFrame:TweenSize(UDim2.new(1, -5, 0, 35), "Out", "Quad", 0.2); pcall(Callback, opt) end) 
                  end
             end
-            
-            -- İlk yükleme
             RefreshList()
-            
-            -- Refresh butonuna bağlanmak için dışarıdan erişilebilir yapabiliriz
-            -- Veya "Refresh" butonuna basınca bu fonksiyonu tekrar çağırmak gerekebilir.
-            -- Şimdilik basitçe ilk yüklemede bırakıyorum, dinamik yenileme için UI library'i geliştirmek gerekir.
             return {Refresh = RefreshList}
         end
         return Elements
@@ -469,7 +469,6 @@ local function LoadMainScript()
     TabPlayer:CreateSlider("FlySpeed", 10, 500, 50, function(v) Settings.FlySpeed = v end)
     TabPlayer:CreateButton("ServerHop", function() Notify("Info", "Searching"); local Http = game:GetService("HttpService"); local TPS = game:GetService("TeleportService"); local Api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Desc&limit=100"; local function ListServers(cursor) return Http:JSONDecode(game:HttpGet(Api .. ((cursor and "&cursor="..cursor) or ""))) end; local Server; repeat local Servers = ListServers(Next); Server = Servers.data[1]; Next = Servers.nextPageCursor until Server; TPS:TeleportToPlaceInstance(game.PlaceId, Server.id, LocalPlayer) end)
 
-    -- POLICE TAB (DÜZELTİLDİ)
     local PoliceStatus = TabPolice:CreateLabel("PoliceStatus")
     local TargetPlayer = nil
     
@@ -480,14 +479,10 @@ local function LoadMainScript()
         end
     end)
     
-    -- Dinamik Dropdown Fonksiyonu (Refresh İçin)
     local function RefreshCriminals()
         local crims = {}
         for _, p in pairs(Players:GetPlayers()) do
             if p ~= LocalPlayer then
-                -- JobId attribute'una güvenme, bazen nil döner. 
-                -- Takım rengi veya karakter üzerindeki diğer işaretlere bakmak daha iyi olabilir.
-                -- Şimdilik JobId ve Wanted attribute'unu kontrol edelim.
                 local jobId = p:GetAttribute("JobId")
                 local wanted = p:GetAttribute("Wanted")
                 if jobId == "Criminal" or wanted == true then
@@ -498,7 +493,6 @@ local function LoadMainScript()
         return crims
     end
 
-    -- Dropdown Oluştur (Fonksiyon vererek dinamik yapıyoruz)
     local CrimDropdownObj = TabPolice:CreateDropdown("CrimList", RefreshCriminals, "Select...", function(Selected)
         TargetPlayer = Players:FindFirstChild(Selected)
         if TargetPlayer then
@@ -509,7 +503,6 @@ local function LoadMainScript()
     end)
 
     TabPolice:CreateButton("Refresh", function()
-        -- Dropdown içindeki listeyi yenile
         if CrimDropdownObj and CrimDropdownObj.Refresh then
             CrimDropdownObj.Refresh()
             local c = RefreshCriminals()
@@ -523,45 +516,36 @@ local function LoadMainScript()
         if v then
             if not TargetPlayer then 
                 Notify("Error", GetText("NoCrim")) 
-                AutoArrestActive = false -- Hedef yoksa kapat
+                AutoArrestActive = false
                 return 
             end
-            
             task.spawn(function()
                 while AutoArrestActive and TargetPlayer do
-                    -- Hedefin karakteri var mı kontrol et
                     if not TargetPlayer.Parent or not TargetPlayer.Character or not TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
                         Notify("Info", "Target Lost / Escaped")
                         break
                     end
-                    
                     local tRoot = TargetPlayer.Character.HumanoidRootPart
                     local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    
                     if myRoot and tRoot then
                         PoliceStatus.Text = string.format(GetText("Catching"), TargetPlayer.Name)
-                        -- Arkasına değil, tam üstüne veya biraz önüne ışınlan ki etkileşim olsun
-                        -- Sıklıkla güncelle (Loop Teleport)
                         myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 0, 1) 
                     end
-                    task.wait() -- Çok hızlı döngü (RenderStepped gibi)
+                    task.wait()
                 end
                 PoliceStatus.Text = GetText("PoliceStatus")
             end)
         end
     end)
 
-    -- CAR TAB
     TabCar:CreateToggle("VehRGB", false, function(v) Settings.RainbowCar = v end)
     TabCar:CreateToggle("VehFly", false, function(v) Settings.CarFly = v end)
     TabCar:CreateSlider("VehSpeed", 50, 800, 100, function(v) Settings.CarFlySpeed = v end)
 
-    -- RACE TAB
     local RaceStatus = TabRace:CreateLabel("RaceStatus")
     TabRace:CreateToggle("RaceToggle", false, function(v) Settings.RaceBot = v; RaceStatus.Text = v and "  "..GetText("RaceActive") or "  "..GetText("RaceStatus") end)
     TabRace:CreateSlider("CheckDelay", 0, 2, 0.5, function(v) Settings.CheckpointDelay = v end)
 
-    -- FARM TAB
     local FarmStatus = TabFarm:CreateLabel("FarmStatus")
     local BagStatus = TabFarm:CreateLabel("BagStatus")
     TabFarm:CreateToggle("FarmStart", false, function(v) 
@@ -597,12 +581,10 @@ local function LoadMainScript()
     end)
     TabFarm:CreateSlider("BagLimit", 5, 100, 25, function(v) Settings.BagLimit = v end)
 
-    -- VISUALS TAB
-    local ESP = {Enabled = false, Veh = false} -- Veh anahtarı eklendi
+    local ESP = {Enabled = false, Veh = false}
     TabVisuals:CreateToggle("ESP", false, function(v) ESP.Enabled = v end)
-    TabVisuals:CreateToggle("VehESP", false, function(v) ESP.Veh = v end) -- YENİ
+    TabVisuals:CreateToggle("VehESP", false, function(v) ESP.Veh = v end)
 
-    -- MAIN LOOPS
     RunService.RenderStepped:Connect(function()
         if Settings.ATMFarm and LocalPlayer.Character then
             local cb = LocalPlayer.Character:GetAttribute("CrimesCommitted") or 0
@@ -613,7 +595,6 @@ local function LoadMainScript()
         if car and Settings.RainbowCar then local c = Color3.fromHSV(tick() % 5 / 5, 1, 1); for _, p in pairs(car:GetDescendants()) do if p:IsA("BasePart") then p.Color = c end end end
         if car and Settings.CarFly and car.PrimaryPart then local pp=car.PrimaryPart; local vFly=pp:FindFirstChild("CarFlyVel") or Instance.new("BodyVelocity", pp); vFly.Name="CarFlyVel"; vFly.MaxForce=Vector3.new(9e9,9e9,9e9); local vGyro=pp:FindFirstChild("CarFlyGyro") or Instance.new("BodyGyro", pp); vGyro.Name="CarFlyGyro"; vGyro.MaxTorque=Vector3.new(9e9,9e9,9e9); vGyro.P=1000; vGyro.D=50; local cam=Workspace.CurrentCamera.CFrame; local dir=Vector3.new(); if UserInputService:IsKeyDown(Enum.KeyCode.W) then dir=dir+cam.LookVector end; if UserInputService:IsKeyDown(Enum.KeyCode.S) then dir=dir-cam.LookVector end; if UserInputService:IsKeyDown(Enum.KeyCode.Space) then dir=dir+Vector3.new(0,1,0) end; vGyro.CFrame=cam; vFly.Velocity=dir.Magnitude>0 and dir.Unit*Settings.CarFlySpeed or Vector3.new() end
         
-        -- ESP LOGIC (OYUNCU)
         if ESP.Enabled then 
             for _, p in pairs(Players:GetPlayers()) do 
                 if p~=LocalPlayer and p.Character and not p.Character:FindFirstChild("WansHighlight") then 
@@ -626,16 +607,14 @@ local function LoadMainScript()
             end 
         end
 
-        -- ESP LOGIC (ARAÇ) - OPTİMİZE EDİLDİ
         if ESP.Veh then
             local vehFolder = Workspace:FindFirstChild("Vehicles")
             if vehFolder then
                 for _, veh in pairs(vehFolder:GetChildren()) do
-                    -- Sadece oyuncusu olan araçları göster
                     if veh:FindFirstChild("Owner") and not veh:FindFirstChild("WansVehHighlight") then
                         local h = Instance.new("Highlight", veh)
                         h.Name = "WansVehHighlight"
-                        h.FillColor = Color3.fromRGB(0, 0, 255) -- Mavi renk
+                        h.FillColor = Color3.fromRGB(0, 0, 255)
                         h.OutlineColor = Color3.new(1,1,1)
                     end
                 end
@@ -650,7 +629,6 @@ local function LoadMainScript()
         end
     end)
 
-    -- RACE LOOP
     task.spawn(function()
         while task.wait(0.5) do
             if Settings.RaceBot then
@@ -670,7 +648,6 @@ local function LoadMainScript()
         end
     end)
 
-    -- Toggle İşlemini bağla
     UserInputService.InputBegan:Connect(function(input, gp)
         if gp then return end
         if input.KeyCode == Enum.KeyCode.K then
