@@ -8,7 +8,7 @@
    
    Project: Wans Studios Hub (Ultimate Edition)
    Game: Driving Empire
-   Version: 22.0 (UI Buttons Fixed)
+   Version: 23.0 (Red Neon Borders + Dark Theme Fix)
    Developer: Wans Studios
 ]]
 
@@ -47,16 +47,17 @@ local KeyLink = "https://wansstudioskeyal.wuaze.com/?pass=WansSecretPass2026"
 local LogoID = "rbxassetid://76940090310301" -- KULLANICININ LOGOSU
 local IsMobile = UserInputService.TouchEnabled
 
--- UI Renk Paleti (NEON RED THEME)
+-- UI Renk Paleti (NEON RED THEME - UPDATED)
 local Theme = {
-    Background = Color3.fromRGB(20, 20, 20),
-    Sidebar = Color3.fromRGB(30, 30, 30),
-    Accent = Color3.fromRGB(255, 30, 60), -- PARLAK NEON KIRMIZI
-    Text = Color3.fromRGB(240, 240, 240),
-    TextDim = Color3.fromRGB(150, 150, 150),
-    ElementBg = Color3.fromRGB(40, 40, 40),
-    Hover = Color3.fromRGB(60, 60, 60),
-    Red = Color3.fromRGB(255, 80, 80),
+    -- Gri yerine çok koyu kırmızı/siyah karışımı
+    Background = Color3.fromRGB(15, 5, 5), 
+    Sidebar = Color3.fromRGB(20, 8, 8),
+    Accent = Color3.fromRGB(255, 0, 0), -- Saf Neon Kırmızı
+    Text = Color3.fromRGB(255, 255, 255),
+    TextDim = Color3.fromRGB(180, 180, 180),
+    ElementBg = Color3.fromRGB(25, 10, 10), -- Elementler için koyu kırmızımsı ton
+    Hover = Color3.fromRGB(40, 20, 20),
+    Red = Color3.fromRGB(255, 50, 50),
     Blue = Color3.fromRGB(80, 150, 255)
 }
 
@@ -245,6 +246,12 @@ function Library:CreateWindow(screenGui)
     MainFrame.ClipsDescendants = true
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
     
+    -- [YENİ] Ana Çerçeve Neon Kenarlık
+    local MainStroke = Instance.new("UIStroke", MainFrame)
+    MainStroke.Color = Theme.Accent
+    MainStroke.Thickness = 2
+    MainStroke.Transparency = 0 -- Tam Görünür
+    
     -- Gölge
     local Shadow = Instance.new("ImageLabel", MainFrame)
     Shadow.ZIndex = 0
@@ -259,7 +266,7 @@ function Library:CreateWindow(screenGui)
     Sidebar.Size = UDim2.new(0, 150, 1, 0)
     Sidebar.BackgroundColor3 = Theme.Sidebar
     Sidebar.BorderSizePixel = 0
-    Sidebar.ZIndex = 10 -- Sidebar'ı öne alıyoruz (Fix)
+    Sidebar.ZIndex = 10 
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
     
     local SidebarCover = Instance.new("Frame", Sidebar)
@@ -267,7 +274,7 @@ function Library:CreateWindow(screenGui)
     SidebarCover.Position = UDim2.new(1, -10, 0, 0)
     SidebarCover.BackgroundColor3 = Theme.Sidebar
     SidebarCover.BorderSizePixel = 0
-    SidebarCover.ZIndex = 10 -- Fix
+    SidebarCover.ZIndex = 10 
     
     local Logo = Instance.new("TextLabel", Sidebar)
     Logo.Size = UDim2.new(1, 0, 0, 50)
@@ -276,40 +283,40 @@ function Library:CreateWindow(screenGui)
     Logo.Font = Enum.Font.FredokaOne
     Logo.TextColor3 = Theme.Accent
     Logo.TextSize = 18
-    Logo.ZIndex = 12 -- Fix
+    Logo.ZIndex = 12 
     
     local TabContainer = Instance.new("ScrollingFrame", Sidebar)
     TabContainer.Position = UDim2.new(0, 0, 0, 60)
     TabContainer.Size = UDim2.new(1, 0, 1, -60)
     TabContainer.BackgroundTransparency = 1
     TabContainer.ScrollBarThickness = 0
-    TabContainer.ZIndex = 11 -- Fix (Sidebar'ın üstünde olmalı)
-    TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y -- GÖRÜNÜRLÜK İÇİN GEREKLİ FIX
+    TabContainer.ZIndex = 11 
+    TabContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y 
     
     local TabList = Instance.new("UIListLayout", TabContainer)
     TabList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     TabList.Padding = UDim.new(0, 8)
     
-    -- [LOGO FIX] ANA LOGO (SAĞ PANELİ TAM DOLDURAN)
+    -- [LOGO FIX] Arka plan logosu (Gri yerine Kırmızı Tonlu & Net)
     local MainLogo = Instance.new("ImageLabel", MainFrame)
     MainLogo.Name = "BackgroundLogo"
     MainLogo.Image = LogoID
     MainLogo.BackgroundTransparency = 1
-    -- Sidebar (150px) biter bitmez başla:
     MainLogo.Position = UDim2.new(0, 150, 0, 0)
-    -- Kalan genişliğin tamamını (100% - 150px) ve tam yüksekliği kapla:
     MainLogo.Size = UDim2.new(1, -150, 1, 0)
-    MainLogo.ImageTransparency = 0.85 
-    MainLogo.ScaleType = Enum.ScaleType.Stretch -- Boşluk kalmasın diye Stretch
-    MainLogo.ZIndex = 1 -- En arkada
-    -- UICorner YOK (Kare olacak)
+    -- Şeffaflığı azalttık (Daha net)
+    MainLogo.ImageTransparency = 0.30 
+    -- Hafif kırmızı ton verdik
+    MainLogo.ImageColor3 = Color3.fromRGB(255, 200, 200) 
+    MainLogo.ScaleType = Enum.ScaleType.Stretch 
+    MainLogo.ZIndex = 1 
 
     -- İçerik Kutusu
     local PagesContainer = Instance.new("Frame", MainFrame)
     PagesContainer.Position = UDim2.new(0, 160, 0, 10)
     PagesContainer.Size = UDim2.new(1, -170, 1, -20)
     PagesContainer.BackgroundTransparency = 1
-    PagesContainer.ZIndex = 5 -- Logonun üzerinde
+    PagesContainer.ZIndex = 5 
     
     Library:MakeDraggable(MainFrame)
     
@@ -354,7 +361,7 @@ function Library:CreateWindow(screenGui)
         Page.ScrollBarThickness = 2
         Page.ScrollBarImageColor3 = Theme.Accent
         Page.Visible = false
-        Page.ZIndex = 5 -- Fix
+        Page.ZIndex = 5 
         
         local PageList = Instance.new("UIListLayout", Page)
         PageList.Padding = UDim.new(0, 10)
@@ -372,7 +379,7 @@ function Library:CreateWindow(screenGui)
         TabBtn.TextColor3 = Theme.TextDim
         TabBtn.Font = Enum.Font.GothamMedium
         TabBtn.TextSize = 14
-        TabBtn.ZIndex = 12 -- GÖRÜNÜRLÜK FIX (Sidebar'ın üstünde)
+        TabBtn.ZIndex = 12 
         Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
         
         Library:RegisterText(TabBtn, nameKey, "Simple")
@@ -382,7 +389,7 @@ function Library:CreateWindow(screenGui)
         Indicator.Position = UDim2.new(0, 0, 0.2, 0)
         Indicator.BackgroundColor3 = Theme.Accent
         Indicator.BackgroundTransparency = 1
-        Indicator.ZIndex = 13 -- Fix
+        Indicator.ZIndex = 13 
         
         local function UpdateTab() 
             for _, t in pairs(Window.Tabs) do 
@@ -414,7 +421,7 @@ function Library:CreateWindow(screenGui)
             Lab.Font = Enum.Font.GothamBold
             Lab.TextSize = 14
             Lab.TextXAlignment = Enum.TextXAlignment.Left
-            Lab.ZIndex = 6 -- Fix
+            Lab.ZIndex = 6 
             Library:RegisterText(Lab, textKey, "Simple")
             return Lab 
         end
@@ -425,8 +432,14 @@ function Library:CreateWindow(screenGui)
             BtnFrame.BackgroundColor3 = Theme.ElementBg
             BtnFrame.Text = ""
             BtnFrame.AutoButtonColor = false
-            BtnFrame.ZIndex = 6 -- Fix
+            BtnFrame.ZIndex = 6 
             Instance.new("UICorner", BtnFrame).CornerRadius = UDim.new(0, 6)
+            
+            -- [YENİ] Butonlara Neon Çerçeve
+            local BtnStroke = Instance.new("UIStroke", BtnFrame)
+            BtnStroke.Color = Theme.Accent
+            BtnStroke.Thickness = 1
+            BtnStroke.Transparency = 0.3 -- Hafif Neon Etkisi
             
             local Title = Instance.new("TextLabel", BtnFrame)
             Title.Size = UDim2.new(1, 0, 1, 0)
@@ -435,7 +448,7 @@ function Library:CreateWindow(screenGui)
             Title.TextColor3 = Theme.Text
             Title.Font = Enum.Font.GothamMedium
             Title.TextSize = 13
-            Title.ZIndex = 7 -- Fix
+            Title.ZIndex = 7 
             Library:RegisterText(Title, textKey, "Simple")
             
             BtnFrame.MouseButton1Click:Connect(function() 
@@ -451,8 +464,14 @@ function Library:CreateWindow(screenGui)
             ToggleFrame.BackgroundColor3 = Theme.ElementBg
             ToggleFrame.Text = ""
             ToggleFrame.AutoButtonColor = false
-            ToggleFrame.ZIndex = 6 -- Fix
+            ToggleFrame.ZIndex = 6 
             Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 6)
+            
+            -- [YENİ] Toggle Neon Çerçeve
+            local TStroke = Instance.new("UIStroke", ToggleFrame)
+            TStroke.Color = Theme.Accent
+            TStroke.Thickness = 1
+            TStroke.Transparency = 0.3
             
             local Title = Instance.new("TextLabel", ToggleFrame)
             Title.Position = UDim2.new(0, 10, 0, 0)
@@ -463,21 +482,21 @@ function Library:CreateWindow(screenGui)
             Title.Font = Enum.Font.GothamMedium
             Title.TextSize = 13
             Title.TextXAlignment = Enum.TextXAlignment.Left
-            Title.ZIndex = 7 -- Fix
+            Title.ZIndex = 7 
             Library:RegisterText(Title, textKey, "Simple")
             
             local SwitchBg = Instance.new("Frame", ToggleFrame)
             SwitchBg.Size = UDim2.new(0, 40, 0, 20)
             SwitchBg.Position = UDim2.new(1, -50, 0.5, -10)
             SwitchBg.BackgroundColor3 = default and Theme.Accent or Color3.fromRGB(80,80,80)
-            SwitchBg.ZIndex = 7 -- Fix
+            SwitchBg.ZIndex = 7 
             Instance.new("UICorner", SwitchBg).CornerRadius = UDim.new(1, 0)
             
             local Circle = Instance.new("Frame", SwitchBg)
             Circle.Size = UDim2.new(0, 16, 0, 16)
             Circle.Position = default and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
             Circle.BackgroundColor3 = Color3.new(1,1,1)
-            Circle.ZIndex = 8 -- Fix
+            Circle.ZIndex = 8 
             Instance.new("UICorner", Circle).CornerRadius = UDim.new(1, 0)
             
             local Enabled = default
@@ -495,8 +514,14 @@ function Library:CreateWindow(screenGui)
             local SliderFrame = Instance.new("Frame", Page)
             SliderFrame.Size = UDim2.new(0.98, 0, 0, 50)
             SliderFrame.BackgroundColor3 = Theme.ElementBg
-            SliderFrame.ZIndex = 6 -- Fix
+            SliderFrame.ZIndex = 6 
             Instance.new("UICorner", SliderFrame).CornerRadius = UDim.new(0, 6)
+            
+            -- [YENİ] Slider Neon Çerçeve
+            local SStroke = Instance.new("UIStroke", SliderFrame)
+            SStroke.Color = Theme.Accent
+            SStroke.Thickness = 1
+            SStroke.Transparency = 0.3
             
             local Title = Instance.new("TextLabel", SliderFrame)
             Title.Position = UDim2.new(0, 10, 0, 5)
@@ -507,7 +532,7 @@ function Library:CreateWindow(screenGui)
             Title.Font = Enum.Font.GothamMedium
             Title.TextSize = 13
             Title.TextXAlignment = Enum.TextXAlignment.Left
-            Title.ZIndex = 7 -- Fix
+            Title.ZIndex = 7 
             Title:SetAttribute("CurrentValue", default)
             Library:RegisterText(Title, textKey, "Slider")
             
@@ -515,20 +540,20 @@ function Library:CreateWindow(screenGui)
             BarBg.Size = UDim2.new(1, -20, 0, 6)
             BarBg.Position = UDim2.new(0, 10, 0, 35)
             BarBg.BackgroundColor3 = Color3.fromRGB(30,30,30)
-            BarBg.ZIndex = 7 -- Fix
+            BarBg.ZIndex = 7 
             Instance.new("UICorner", BarBg).CornerRadius = UDim.new(1,0)
             
             local Fill = Instance.new("Frame", BarBg)
             Fill.Size = UDim2.new((default - min)/(max - min), 0, 1, 0)
             Fill.BackgroundColor3 = Theme.Accent
-            Fill.ZIndex = 8 -- Fix
+            Fill.ZIndex = 8 
             Instance.new("UICorner", Fill).CornerRadius = UDim.new(1,0)
             
             local Trigger = Instance.new("TextButton", BarBg)
             Trigger.Size = UDim2.new(1,0,1,0)
             Trigger.BackgroundTransparency = 1
             Trigger.Text = ""
-            Trigger.ZIndex = 9 -- Fix
+            Trigger.ZIndex = 9 
             
             local dragging = false
             local Val = default
@@ -551,8 +576,14 @@ function Library:CreateWindow(screenGui)
             local DropFrame = Instance.new("Frame", Page)
             DropFrame.Size = UDim2.new(0.98, 0, 0, 35)
             DropFrame.BackgroundColor3 = Theme.ElementBg
-            DropFrame.ZIndex = 6 -- Fix
+            DropFrame.ZIndex = 6 
             Instance.new("UICorner", DropFrame).CornerRadius = UDim.new(0, 6)
+            
+            -- [YENİ] Dropdown Neon Çerçeve
+            local DStroke = Instance.new("UIStroke", DropFrame)
+            DStroke.Color = Theme.Accent
+            DStroke.Thickness = 1
+            DStroke.Transparency = 0.3
             
             local Label = Instance.new("TextLabel", DropFrame)
             Label.Size = UDim2.new(0.4, 0, 1, 0)
@@ -563,7 +594,7 @@ function Library:CreateWindow(screenGui)
             Label.Font = Enum.Font.GothamMedium
             Label.TextSize = 13
             Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.ZIndex = 7 -- Fix
+            Label.ZIndex = 7 
             Library:RegisterText(Label, textKey, "Dropdown")
             
             local Button = Instance.new("TextButton", DropFrame)
@@ -574,7 +605,7 @@ function Library:CreateWindow(screenGui)
             Button.TextColor3 = Theme.Accent
             Button.Font = Enum.Font.Code
             Button.TextSize = 12
-            Button.ZIndex = 7 -- Fix
+            Button.ZIndex = 7 
             Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 4)
             
             local isOpen = false
@@ -583,7 +614,7 @@ function Library:CreateWindow(screenGui)
             ListFrame.Visible = false
             ListFrame.BackgroundColor3 = Theme.Sidebar
             ListFrame.BorderSizePixel = 0
-            ListFrame.ZIndex = 20 -- Dropdown en üstte olmalı
+            ListFrame.ZIndex = 20 
             Instance.new("UICorner", ListFrame).CornerRadius = UDim.new(0, 6)
             
             local Layout = Instance.new("UIListLayout", ListFrame)
@@ -610,7 +641,7 @@ function Library:CreateWindow(screenGui)
                     OptBtn.TextColor3 = Theme.Text
                     OptBtn.Font = Enum.Font.Gotham
                     OptBtn.TextSize = 12
-                    OptBtn.ZIndex = 21 -- Dropdown itemleri
+                    OptBtn.ZIndex = 21 
                     OptBtn.MouseButton1Click:Connect(function() 
                         Button.Text = opt .. " >"
                         isOpen = false
