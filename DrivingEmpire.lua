@@ -15,8 +15,8 @@
 -- =============================================================================
 -- 🔒 AYARLAR
 -- =============================================================================
-local KeyLink = "https://pastebin.com/raw/uZyYR60q" 
-local GetKeyLink = "https://discord.gg/mX4EngC6pw" 
+local KeyLink = "https://wansstudioskeyal.wuaze.com/?pass=WansSecretPass2026" 
+local GetKeyLink = "https://wansstudioskeyal.wuaze.com/?pass=WansSecretPass2026" 
 local ArkaPlanGorseli = "rbxassetid://135213223432744" 
 
 -- =============================================================================
