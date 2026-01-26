@@ -16,7 +16,7 @@
 -- 🔒 AYARLAR
 -- =============================================================================
 -- Bu link sadece kopyalamak içindir, kontrol için kullanılmaz.
-local GetKeyLink = "https://linkvertise.com/3041148/6gmLZTgCNaVc?o=sharing" 
+local GetKeyLink = "https://wansstudioskeyal.wuaze.com/?pass=WansSecretPass2026" 
 local ArkaPlanGorseli = "rbxassetid://135213223432744" 
 
 -- =============================================================================
