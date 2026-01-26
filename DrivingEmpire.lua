@@ -14,7 +14,7 @@
 -- 🔒 AYARLAR (DÜZELTİLDİ)
 -- =============================================================================
 -- Script bu linke "Bu key doğru mu?" diye soracak:
-local VerifyLink = "https://wansstudioskeyal.wuaze.com/key.php?action=generate"
+local VerifyLink = "https://wansstudioskeyal.wuaze.com/key.php?action=check&k="
 
 -- Kullanıcı "Key Al" butonuna basınca kopyalanacak link (Linkvertise):
 local GetKeyLink = "https://linkvertise.com/3041148/6gmLZTgCNaVc?o=sharing" 
@@ -226,15 +226,20 @@ local function StartKeySystem(OnSuccess)
 
         -- Siteye Kontrol İsteği Gönder (YENİ MANTIK)
         task.spawn(function()
-            -- Direkt olarak check URL'sine keyi ekleyip soruyoruz
-            -- Site bize "valid" veya "invalid" cevabı verecek
+            -- CACHE SORUNUNU ÇÖZMEK İÇİN SONUNA RASTGELE SAYI EKLİYORUZ (&_ra=...)
+            -- Böylece Roblox her seferinde sunucuya gitmek zorunda kalıyor.
+            local RequestUrl = VerifyLink .. InputKey .. "&_ra=" .. math.random(1, 100000)
+            
             local Success, Response = pcall(function() 
-                return game:HttpGet(VerifyLink .. InputKey, true) 
+                return game:HttpGet(RequestUrl, true) 
             end)
 
             if Success then
                 -- Gelen cevapta boşluk varsa temizle
                 Response = string.gsub(Response, "^%s*(.-)%s*$", "%1")
+                
+                -- Debug için konsola yazdıralım (F9)
+                print("WansHub Server Response: ", Response)
                 
                 if Response == "valid" then
                     -- BAŞARILI
