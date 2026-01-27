@@ -8,7 +8,7 @@
    
    Project: Wans Studios Hub (Ultimate Edition)
    Game: Driving Empire
-   Version: 23.0 (Red Neon Borders + Dark Theme Fix)
+   Version: 24.0 (Key System Text Size Increased)
    Developer: Wans Studios
 ]]
 
@@ -701,6 +701,7 @@ local function InitKeySystem(OnSuccess)
     EnterBtn.Text = T("Enter")
     EnterBtn.TextColor3 = Color3.new(0,0,0)
     EnterBtn.Font = Enum.Font.GothamBold
+    EnterBtn.TextSize = 18 -- ARTIRILDI
     Instance.new("UICorner", EnterBtn).CornerRadius = UDim.new(0, 6)
     
     local GetBtn = Instance.new("TextButton", Frame)
@@ -710,6 +711,7 @@ local function InitKeySystem(OnSuccess)
     GetBtn.Text = T("GetKey")
     GetBtn.TextColor3 = Theme.Text
     GetBtn.Font = Enum.Font.GothamBold
+    GetBtn.TextSize = 18 -- ARTIRILDI
     Instance.new("UICorner", GetBtn).CornerRadius = UDim.new(0, 6)
     Instance.new("UIStroke", GetBtn).Color = Theme.Accent
     GetBtn.UIStroke.Thickness = 1
