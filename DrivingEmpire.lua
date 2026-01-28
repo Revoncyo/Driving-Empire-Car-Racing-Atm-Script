@@ -8,7 +8,7 @@
    
    Project: Wans Studios Hub (Ultimate Edition)
    Game: Driving Empire
-   Version: 29.1 (Turkish Language Fix & Full Localization)
+   Version: 29.4 (Race Float Fix + Instant Torque + Nitro)
    Developer: Wans Studios
 ]]
 
@@ -98,7 +98,7 @@ local Lang = {
         AntiAfk = "Anti-AFK", ServerHop = "Server Hop", HopMsg = "Searching for server...",
         VehFly = "Vehicle Fly", VehFlySpeed = "Vehicle Fly Speed",
         AutoRace = "Auto Race Bot", CheckDelay = "Checkpoint Delay",
-        RaceStart = "Race Started (%d CPs)", RaceFinish = "Race Finished!", RaceActive = "Waiting for Race...", NoVeh = "No Vehicle Found!",
+        RaceStart = "Race Started (%d CPs)", RaceFinish = "Race Finished!", RaceActive = "Waiting for start...", NoVeh = "No Vehicle Found!",
         -- New Translations
         Robbing = "Robbing ATM...", Cooldown = "Finishing...", Scanning = "Scanning ATMs...",
         Walking = "Walking to Seller...", Running = "Running...",
@@ -107,7 +107,10 @@ local Lang = {
         SelectTargetFirst = "Select a target first!",
         AutoArrestStopped = "Auto Arrest Stopped",
         SystemTitle = "System",
-        Waiting = "Waiting..."
+        Waiting = "Waiting...",
+        RaceFlying = "Flying to Checkpoint...",
+        InfNitro = "Infinite Nitro", CarSpeed = "Super Torque & Speed",
+        RaceWait = "Drive to start Auto Race!"
     },
     Turkish = {
         Title = "Driving Empire", HubTitle = "WANS HUB",
@@ -128,7 +131,7 @@ local Lang = {
         AntiAfk = "Anti-AFK", ServerHop = "Sunucu Değiştir", HopMsg = "Sunucu aranıyor...",
         VehFly = "Araç Uçurma", VehFlySpeed = "Araç Uçuş Hızı",
         AutoRace = "Oto Yarış Botu", CheckDelay = "Checkpoint Gecikmesi",
-        RaceStart = "Yarış Başladı (%d CP)", RaceFinish = "Yarış Bitti!", RaceActive = "Yarış Bekleniyor...", NoVeh = "Araç Bulunamadı!",
+        RaceStart = "Yarış Başladı (%d CP)", RaceFinish = "Yarış Bitti!", RaceActive = "Başlangıç bekleniyor...", NoVeh = "Araç Bulunamadı!",
         -- Eksik Kelimeler Eklendi
         Robbing = "ATM Soyuluyor...", Cooldown = "Bitiriliyor...", Scanning = "ATM Aranıyor...",
         Walking = "Satıcıya Gidiliyor...", Running = "Çalışıyor...",
@@ -137,7 +140,10 @@ local Lang = {
         SelectTargetFirst = "Önce bir hedef seçin!",
         AutoArrestStopped = "Oto Yakala Durduruldu",
         SystemTitle = "Sistem",
-        Waiting = "Bekleniyor..."
+        Waiting = "Bekleniyor...",
+        RaceFlying = "Uçuluyor... (Yüksek İrtifa)",
+        InfNitro = "Sınırsız Nitro", CarSpeed = "Süper Tork (Ani Hız) & Hız",
+        RaceWait = "Yarışı başlatmak için sürün!"
     }
 }
 
@@ -842,7 +848,8 @@ local function MainLogic()
         RainbowCar=false, CarFly=false, CarFlySpeed=100,
         AutoFarm=false, BagLimit=25, AutoArrest=false, 
         ESP=false, VehESP=false, 
-        RaceBot=false, CheckpointDelay=0.5
+        RaceBot=false, CheckpointDelay=0.5,
+        InfNitro=false, CarSpeedHack=false, CarSpeedVal=500
     }
 
     local function SimpleGoTo(destination, timeout) 
@@ -941,13 +948,11 @@ local function MainLogic()
     end
 
     -- [GOD MODE TRACKING SYSTEM - v29.0]
-    -- Bu fonksiyon hedefi ne olursa olsun bulur: Karakter, Koltuk, Araç Sahibi, Pivot
     local function GetTargetPosition(target)
         if not target then return nil end
         
         local targetCFrame, targetVel, targetType = nil, Vector3.zero, "None"
         
-        -- 1. YÖNTEM: KOLTUK KONTROLÜ (En Kesini)
         local char = target.Character
         if char then
             local hum = char:FindFirstChild("Humanoid")
@@ -956,14 +961,11 @@ local function MainLogic()
             end
         end
 
-        -- 2. YÖNTEM: ARAÇ SAHİBİ ARAMA (Hızlı giden araçlar için God Mode)
-        -- Karakter yüklenmese bile arabası haritadadır. Sahibinden buluruz.
         local vehicles = Workspace:FindFirstChild("Vehicles")
         if vehicles then
             for _, veh in pairs(vehicles:GetChildren()) do
                 local owner = veh:FindFirstChild("Owner")
                 if owner and owner.Value == target.Name then
-                    -- Aracın ana parçası veya sürücü koltuğu
                     local primary = veh.PrimaryPart or veh:FindFirstChild("VehicleSeat") or veh:FindFirstChildWhichIsA("BasePart", true)
                     if primary then
                         return primary.CFrame, primary.AssemblyLinearVelocity, "Vehicle_Owner"
@@ -972,15 +974,11 @@ local function MainLogic()
             end
         end
 
-        -- 3. YÖNTEM: STANDART KARAKTER
         if char then
             local root = char:FindFirstChild("HumanoidRootPart")
             if root then
                 return root.CFrame, root.AssemblyLinearVelocity, "Root"
             end
-            
-            -- 4. YÖNTEM: PIVOT (StreamingEnabled kurtarıcısı)
-            -- Karakter var ama parçaları yoksa
             return char:GetPivot(), Vector3.zero, "Pivot"
         end
 
@@ -1000,15 +998,10 @@ local function MainLogic()
             
             if not targetPlayer then return end
             
-            -- HEDEF ANALİZİ
             local targetCFrame, targetVel, trackType = GetTargetPosition(targetPlayer)
             
-            if not targetCFrame then 
-                -- Hedef tamamen yoksa bekle
-                return 
-            end
+            if not targetCFrame then return end
 
-            -- BENİM DURUMUM
             local myChar = LocalPlayer.Character
             if not myChar then return end
             
@@ -1016,30 +1009,21 @@ local function MainLogic()
             local myHum = myChar:FindFirstChild("Humanoid")
             local mySeat = myHum and myHum.SeatPart
             
-            -- HESAPLAMA (PREDICTION)
             local speed = targetVel.Magnitude
             local destCFrame
             
             if speed > 200 then
-                -- HIZLI MOD (200+ SPS): Önüne geç (Intercept)
-                -- 0.5 sn ilerisini tahmin et + 40 stud ileri at
                 local futurePos = targetCFrame.Position + (targetVel * 0.5) + (targetVel.Unit * 40)
-                -- Hedefin baktığı yöne bak
                 destCFrame = CFrame.new(futurePos, futurePos + targetVel.Unit) * CFrame.new(0, 3, 0)
             else
-                -- YAVAŞ MOD: Tepesine bin
                 destCFrame = targetCFrame * CFrame.new(0, 5, 0)
             end
 
-            -- UYGULAMA (TELEPORT)
             if mySeat and mySeat.Parent then
-                -- Arabadayız -> Arabayı taşı
                 local vehModel = mySeat.Parent
-                -- Modelin kendisi değilse bir üstünü dene (bazen koltuk model içindedir)
                 if not vehModel:IsA("Model") then vehModel = vehModel.Parent end
                 
                 if vehModel and vehModel:IsA("Model") then
-                    -- Fizik iptali (Çarpışma yok)
                     for _, p in pairs(vehModel:GetDescendants()) do
                         if p:IsA("BasePart") then
                             p.AssemblyLinearVelocity = Vector3.zero
@@ -1050,7 +1034,6 @@ local function MainLogic()
                     vehModel:PivotTo(destCFrame)
                 end
             elseif myRoot then
-                -- Yayayız -> Karakteri taşı
                 myChar:PivotTo(destCFrame)
                 myRoot.AssemblyLinearVelocity = Vector3.zero
                 myRoot.AssemblyAngularVelocity = Vector3.zero
@@ -1119,9 +1102,30 @@ local function MainLogic()
     VehTab:AddToggle("VehFly", false, function(v) Settings.CarFly = v end)
     VehTab:AddSlider("VehFlySpeed", 50, 800, 100, function(v) Settings.CarFlySpeed = v end)
     
+    -- [NEW FEATURES: NITRO & SPEED]
+    VehTab:AddToggle("InfNitro", false, function(v) Settings.InfNitro = v end)
+    VehTab:AddToggle("CarSpeed", false, function(v) Settings.CarSpeedHack = v end)
+    VehTab:AddSlider("CarSpeed", 500, 10000, 800, function(v) Settings.CarSpeedVal = v end)
+
     -- Race
     local RaceStatus = RaceTab:AddLabel("RaceActive")
-    RaceTab:AddToggle("AutoRace", false, function(v) Settings.RaceBot = v; RaceStatus.Text = v and T("RaceActive") or T("Stopped") end)
+    RaceTab:AddToggle("AutoRace", false, function(v) 
+        Settings.RaceBot = v; 
+        RaceStatus.Text = v and T("RaceWait") or T("Stopped") 
+        if not v then
+             local car = GetVehicle()
+             if car and car.PrimaryPart then
+                -- Cleanup physics movers if disabled
+                if car.PrimaryPart:FindFirstChild("WansBodyPos") then car.PrimaryPart.WansBodyPos:Destroy() end
+                if car.PrimaryPart:FindFirstChild("WansBodyGyro") then car.PrimaryPart.WansBodyGyro:Destroy() end
+                
+                -- Restore collision
+                for _, p in pairs(car:GetDescendants()) do
+                    if p:IsA("BasePart") then p.CanCollide = true end
+                end
+             end
+        end
+    end)
     RaceTab:AddSlider("CheckDelay", 0, 2, 0.5, function(v) Settings.CheckpointDelay = v end)
 
     -- Police
@@ -1143,13 +1147,11 @@ local function MainLogic()
         CurrentTargetPlayer = Players:FindFirstChild(pName)
         if CurrentTargetPlayer then 
             PStatus.Text = string.format(T("Target"), pName) 
-            -- [GÜNCELLEME] Seçilir seçilmez takibi başlat (Eğer toggle açıksa)
             if Settings.AutoArrest then
                  StartTracking(CurrentTargetPlayer)
             end
         else 
             PStatus.Text = T("NoTarget") 
-            -- Hedef yoksa takibi durdur
             if TrackingConnection then TrackingConnection:Disconnect() TrackingConnection = nil end
         end 
     end)
@@ -1158,7 +1160,6 @@ local function MainLogic()
         Drop.Refresh() 
     end)
     
-    -- [GÜNCELLEME] AutoArrest Toggle
     PoliceTab:AddToggle("AutoArrest", false, function(v) 
         Settings.AutoArrest = v
         if v then 
@@ -1225,6 +1226,42 @@ local function MainLogic()
     
     -- LOOPS
     RunService.RenderStepped:Connect(function()
+        local car = GetVehicle()
+
+        -- Infinite Nitro Logic (Attribute + Value Scan)
+        if Settings.InfNitro and car then
+             -- 1. Scan Attributes on Car
+             if car:GetAttribute("Nitro") then car:SetAttribute("Nitro", 200) end
+             
+             -- 2. Scan Attributes on Player (Sometimes stored here)
+             if LocalPlayer:GetAttribute("Nitro") then LocalPlayer:SetAttribute("Nitro", 200) end
+
+             -- 3. Scan Value Objects (Old systems)
+            for _, v in pairs(car:GetDescendants()) do
+                if v.Name == "Nitro" or v.Name == "NitroFuel" then
+                    if v:IsA("NumberValue") or v:IsA("DoubleConstrainedValue") then
+                        v.Value = 9999
+                    end
+                end
+            end
+        end
+
+        -- Car Speed/Torque Logic (INSTANT POWER)
+        if Settings.CarSpeedHack and car then
+            local seat = car:FindFirstChild("VehicleSeat")
+            if seat then
+                -- Force Maximum Torque
+                seat.Torque = math.huge -- Infinite Torque
+                seat.MaxSpeed = Settings.CarSpeedVal
+                seat.TurnSpeed = 2 -- Better handling at high speed
+                
+                -- Extra Kick (BodyThrust) if needed
+                if seat.Throttle > 0 then
+                    car.PrimaryPart.AssemblyLinearVelocity = car.PrimaryPart.AssemblyLinearVelocity + (car.PrimaryPart.CFrame.LookVector * 2)
+                end
+            end
+        end
+
         if Settings.Speed and LocalPlayer.Character then 
             local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
             local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -1254,7 +1291,6 @@ local function MainLogic()
         end
         
         -- Car Fly Logic
-        local car = GetVehicle()
         if car and Settings.RainbowCar then 
             local c = Color3.fromHSV(tick() % 5 / 5, 1, 1)
             for _, p in pairs(car:GetDescendants()) do 
@@ -1323,46 +1359,92 @@ local function MainLogic()
         end
     end)
     
-    -- Race Bot Logic
+    -- =============================================================================
+    -- 🏁 OTO YARIŞ SİSTEMİ (v29.4 Fix - Air Mode)
+    -- =============================================================================
     task.spawn(function()
-        while task.wait(0.5) do
+        while task.wait(0.1) do
             if Settings.RaceBot then
                 local car = GetVehicle()
-                if car and car:FindFirstChild("VehicleSeat") then
-                    local cp = {}
-                    local fl = nil
-                    local folders = {Workspace}
-                    if Workspace:FindFirstChild("Game") then table.insert(folders, Workspace.Game) end
-                    if Workspace:FindFirstChild("Races") then table.insert(folders, Workspace.Races) end
-                    for _, f in pairs(folders) do 
-                        for _, o in pairs(f:GetDescendants()) do 
-                            if o:IsA("BasePart") and o.Transparency < 1 then 
-                                if tonumber(o.Name) then table.insert(cp, o) 
-                                elseif o.Name:lower():find("finish") then fl = o end 
-                            end 
-                        end 
-                    end
-                    table.sort(cp, function(a,b) return tonumber(a.Name) < tonumber(b.Name) end)
-                    if fl then table.insert(cp, fl) end
-                    if #cp > 0 then
-                        RaceStatus.Text = string.format(T("RaceStart"), #cp)
-                        for _, p in ipairs(cp) do 
-                            if not Settings.RaceBot then break end
-                            if (car.PrimaryPart.Position - p.Position).Magnitude > 20 then 
-                                car:PivotTo(p.CFrame * CFrame.new(0, 2, 0))
-                                if car.VehicleSeat then 
-                                    car.VehicleSeat.AssemblyLinearVelocity = car.VehicleSeat.CFrame.LookVector * 150 
+                
+                -- Checkpoints Setup
+                if car and car.PrimaryPart and car.PrimaryPart.AssemblyLinearVelocity.Magnitude > 5 then
+                    
+                    local raceFolder = Workspace:FindFirstChild("Races") or Workspace:FindFirstChild("Race") or Workspace:FindFirstChild("ActiveRace")
+                    local checkpoints = {}
+
+                    if raceFolder then
+                        for _, desc in pairs(raceFolder:GetDescendants()) do
+                            if desc:IsA("BasePart") and desc.Transparency < 1 then
+                                if tonumber(desc.Name) then
+                                    table.insert(checkpoints, desc)
+                                elseif desc.Name:lower():find("finish") then
+                                    table.insert(checkpoints, desc)
+                                elseif desc.Name:lower():find("checkpoint") then
+                                    table.insert(checkpoints, desc)
                                 end
-                                task.wait(Settings.CheckpointDelay) 
-                            end 
+                            end
                         end
-                        RaceStatus.Text = T("RaceFinish")
-                        task.wait(2)
-                    else 
-                        RaceStatus.Text = T("RaceActive") 
+                    end
+
+                    table.sort(checkpoints, function(a, b)
+                        local nA = tonumber(a.Name) or (a.Name:lower():find("finish") and 9999 or 0)
+                        local nB = tonumber(b.Name) or (b.Name:lower():find("finish") and 9999 or 0)
+                        return nA < nB
+                    end)
+
+                    local nextCP = nil
+                    local minDst = math.huge
+                    
+                    for _, cp in ipairs(checkpoints) do
+                        local dist = (car.PrimaryPart.Position - cp.Position).Magnitude
+                        local vecToCp = (cp.Position - car.PrimaryPart.Position).Unit
+                        local dotProd = car.PrimaryPart.CFrame.LookVector:Dot(vecToCp)
+                        
+                        if dotProd > 0 then
+                             if dist < minDst then
+                                minDst = dist
+                                nextCP = cp
+                            end
+                        end
+                    end
+
+                    if nextCP then
+                        RaceStatus.Text = T("RaceFlying")
+
+                        local bp = car.PrimaryPart:FindFirstChild("WansBodyPos") or Instance.new("BodyPosition", car.PrimaryPart)
+                        bp.Name = "WansBodyPos"
+                        bp.MaxForce = Vector3.new(9e9, 9e9, 9e9) 
+                        bp.D = 500
+                        bp.P = 10000
+                        
+                        local bg = car.PrimaryPart:FindFirstChild("WansBodyGyro") or Instance.new("BodyGyro", car.PrimaryPart)
+                        bg.Name = "WansBodyGyro"
+                        bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+                        bg.D = 100
+                        bg.P = 5000
+                        
+                        -- [CRITICAL FIX] Fly High Above Ground (Y + 20)
+                        local targetPos = nextCP.Position
+                        targetPos = Vector3.new(targetPos.X, math.max(targetPos.Y, car.PrimaryPart.Position.Y) + 20, targetPos.Z)
+
+                        bp.Position = targetPos
+                        bg.CFrame = CFrame.lookAt(car.PrimaryPart.Position, targetPos)
+
+                        -- [CRITICAL FIX] Disable ALL Collisions (Ghost Mode)
+                        for _, p in pairs(car:GetDescendants()) do
+                            if p:IsA("BasePart") then p.CanCollide = false end
+                        end
+                    else
+                         if car.PrimaryPart:FindFirstChild("WansBodyPos") then car.PrimaryPart.WansBodyPos:Destroy() end
+                         if car.PrimaryPart:FindFirstChild("WansBodyGyro") then car.PrimaryPart.WansBodyGyro:Destroy() end
                     end
                 else 
-                    RaceStatus.Text = T("NoVeh") 
+                    RaceStatus.Text = T("RaceWait") 
+                    if car and car.PrimaryPart then
+                         if car.PrimaryPart:FindFirstChild("WansBodyPos") then car.PrimaryPart.WansBodyPos:Destroy() end
+                         if car.PrimaryPart:FindFirstChild("WansBodyGyro") then car.PrimaryPart.WansBodyGyro:Destroy() end
+                    end
                 end
             end
         end
