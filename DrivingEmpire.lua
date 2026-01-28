@@ -8,7 +8,7 @@
    
    Project: Wans Studios Hub (Ultimate Edition)
    Game: Driving Empire
-   Version: 24.5 (Final Sky Fix - Force TP)
+   Version: 29.1 (Turkish Language Fix & Full Localization)
    Developer: Wans Studios
 ]]
 
@@ -33,8 +33,6 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local HttpService = game:GetService("HttpService")
-local TeleportService = game:GetService("TeleportService")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
@@ -42,10 +40,13 @@ local VirtualUser = game:GetService("VirtualUser")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
+-- Global Değişkenler
+local TrackingConnection = nil 
+local CurrentTargetPlayer = nil
+
 -- Config
 local KeyLink = "https://wansstudioskeyal.wuaze.com/?pass=WansSecretPass2026" 
 local LogoID = "rbxassetid://76940090310301"
-local IsMobile = UserInputService.TouchEnabled
 
 -- UI Renk Paleti (NEON RED THEME)
 local Theme = {
@@ -74,7 +75,7 @@ local function GetCorrectKey()
 end
 
 -- =============================================================================
--- 🌍 DİL SİSTEMİ
+-- 🌍 DİL SİSTEMİ (GÜNCELLENDİ)
 -- =============================================================================
 local CurrentLang = "English"
 local TextRegistry = {} 
@@ -86,24 +87,27 @@ local Lang = {
         Success = "Access Granted", Fail = "Invalid Key",
         Home = "Home", Player = "Player", Vehicle = "Vehicle", Farm = "Auto Farm", Race = "Race Bot", Visuals = "Visuals", Settings = "Settings", AutoPolice = "Auto Police",
         Speed = "Speed Hack", Fly = "Fly Mode", Rainbow = "Rainbow Car",
-        AutoFarm = "Auto ATM Farm", AutoArrest = "Auto Arrest (Loop TP)",
+        AutoFarm = "Auto ATM Farm", AutoArrest = "Auto Arrest (GOD MODE)",
         ESP = "Player ESP", VehESP = "Vehicle ESP",
         Discord = "Copy Discord", Copied = "Link Copied!",
-        Waiting = "Waiting...", Running = "Running...", Stopped = "Stopped",
-        BagStatus = "Bag: %d / %d", Selling = "Bag Full! Selling...",
         Status = "Status: %s",
         SelectCrim = "Select Criminal", Refresh = "Refresh List",
         Target = "Target: %s", NoTarget = "Target: None",
         JobSet = "Job set to Police", JobError = "Could not set Job",
-        Robbing = "Robbing ATM...", Cooldown = "Finishing...", Scanning = "Scanning ATMs...",
-        Walking = "Walking to Seller...",
-        LangChange = "Language Changed!", BagLimit = "Bag Limit",
-        SpeedVal = "Speed Value", FlySpeed = "Fly Speed",
         Dev = "Developer: Wans Studios",
         AntiAfk = "Anti-AFK", ServerHop = "Server Hop", HopMsg = "Searching for server...",
         VehFly = "Vehicle Fly", VehFlySpeed = "Vehicle Fly Speed",
         AutoRace = "Auto Race Bot", CheckDelay = "Checkpoint Delay",
-        RaceStart = "Race Started (%d CPs)", RaceFinish = "Race Finished!", RaceActive = "Waiting for Race...", NoVeh = "No Vehicle Found!"
+        RaceStart = "Race Started (%d CPs)", RaceFinish = "Race Finished!", RaceActive = "Waiting for Race...", NoVeh = "No Vehicle Found!",
+        -- New Translations
+        Robbing = "Robbing ATM...", Cooldown = "Finishing...", Scanning = "Scanning ATMs...",
+        Walking = "Walking to Seller...", Running = "Running...",
+        Selling = "Bag Full! Selling...", Sold = "Sold! Returning...",
+        GodModeActive = "GOD MODE TRACKING ACTIVE",
+        SelectTargetFirst = "Select a target first!",
+        AutoArrestStopped = "Auto Arrest Stopped",
+        SystemTitle = "System",
+        Waiting = "Waiting..."
     },
     Turkish = {
         Title = "Driving Empire", HubTitle = "WANS HUB",
@@ -111,24 +115,29 @@ local Lang = {
         Success = "Giriş Başarılı", Fail = "Hatalı Anahtar",
         Home = "Ana Sayfa", Player = "Oyuncu", Vehicle = "Araç", Farm = "Oto Farm", Race = "Oto Yarış", Visuals = "Görsel", Settings = "Ayarlar", AutoPolice = "Oto Polis",
         Speed = "Hız Hilesi", Fly = "Uçma Modu", Rainbow = "Gökkuşağı Araç",
-        AutoFarm = "Oto ATM Farm", AutoArrest = "Oto Yakala (Loop TP)",
+        AutoFarm = "Oto ATM Farm", AutoArrest = "Oto Yakala (GOD MODU)",
         ESP = "Oyuncu ESP", VehESP = "Araç ESP",
         Discord = "Discord Kopyala", Copied = "Link Kopyalandı!",
-        Waiting = "Bekleniyor...", Running = "Çalışıyor...", Stopped = "Durduruldu",
-        BagStatus = "Çanta: %d / %d", Selling = "Çanta Doldu! Satılıyor...",
         Status = "Durum: %s",
         SelectCrim = "Hırsız Seç", Refresh = "Listeyi Yenile",
         Target = "Hedef: %s", NoTarget = "Hedef: Yok",
         JobSet = "Meslek Polis Yapıldı", JobError = "Meslek Seçilemedi",
-        Robbing = "ATM Soyuluyor...", Cooldown = "Bitiriliyor...", Scanning = "ATM Aranıyor...",
-        Walking = "Satıcıya Yürünüyor...",
         LangChange = "Dil Değiştirildi!", BagLimit = "Çanta Limiti",
         SpeedVal = "Hız Değeri", FlySpeed = "Uçuş Hızı",
         Dev = "Geliştirici: Wans Studios",
         AntiAfk = "Anti-AFK", ServerHop = "Sunucu Değiştir", HopMsg = "Sunucu aranıyor...",
         VehFly = "Araç Uçurma", VehFlySpeed = "Araç Uçuş Hızı",
         AutoRace = "Oto Yarış Botu", CheckDelay = "Checkpoint Gecikmesi",
-        RaceStart = "Yarış Başladı (%d CP)", RaceFinish = "Yarış Bitti!", RaceActive = "Yarış Bekleniyor...", NoVeh = "Araç Bulunamadı!"
+        RaceStart = "Yarış Başladı (%d CP)", RaceFinish = "Yarış Bitti!", RaceActive = "Yarış Bekleniyor...", NoVeh = "Araç Bulunamadı!",
+        -- Eksik Kelimeler Eklendi
+        Robbing = "ATM Soyuluyor...", Cooldown = "Bitiriliyor...", Scanning = "ATM Aranıyor...",
+        Walking = "Satıcıya Gidiliyor...", Running = "Çalışıyor...",
+        Selling = "Çanta Dolu! Satılıyor...", Sold = "Satıldı! Dönülüyor...",
+        GodModeActive = "SÜPER TAKİP AKTİF (GOD MODE)",
+        SelectTargetFirst = "Önce bir hedef seçin!",
+        AutoArrestStopped = "Oto Yakala Durduruldu",
+        SystemTitle = "Sistem",
+        Waiting = "Bekleniyor..."
     }
 }
 
@@ -752,7 +761,6 @@ local function MainLogic()
         end 
     end)
 
-    -- [GÜNCELLEME: Güçlendirilmiş Teleport Fonksiyonu]
     local function TP(pos) 
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
             local hrp = LocalPlayer.Character.HumanoidRootPart
@@ -765,12 +773,9 @@ local function MainLogic()
             end 
             
             if targetCFrame then
-                -- Önce hızı sıfırla
                 hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                -- Sonra ışınla
                 hrp.CFrame = targetCFrame
-                -- Garanti olsun diye tekrar pivotla
                 LocalPlayer.Character:PivotTo(targetCFrame)
             end
         end 
@@ -801,7 +806,6 @@ local function MainLogic()
         end 
     end
     
-    -- [DEĞİŞİKLİK] Platform yüksekliği 800 (Daha güvenli, 5000 çok yüksek)
     local platformPositions = {
         Vector3.new(-978.88, 800, 313.34), 
         Vector3.new(-484.32, 800, -1226.45), 
@@ -820,11 +824,10 @@ local function MainLogic()
             platform.Name = "WansPlatform"
             platform.Parent = Workspace
             platform.Position = pos
-            -- [DÜZELTME] Boyut 20x20.
             platform.Size = Vector3.new(20, 1, 20)
             platform.Color = Color3.fromRGB(0, 0, 0)
             platform.Anchored = true 
-            platform.Transparency = 0.5 -- Yarı saydam
+            platform.Transparency = 0.5 
         end 
     end
     
@@ -875,7 +878,7 @@ local function MainLogic()
                 task.wait(2.0)
                 currentCrimes = LocalPlayer.Character and LocalPlayer.Character:GetAttribute("CrimesCommitted") or 0 
             end
-            if StatusLabel then StatusLabel.Text = "Sold!" end
+            if StatusLabel then StatusLabel.Text = T("Sold") end
             return true 
         end
         return false 
@@ -895,28 +898,22 @@ local function MainLogic()
         local safePos = platformPositions[math.random(1, #platformPositions)]
         local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         
-        -- ATM'ye git ve soygunu başlat
         if StatusLabel then StatusLabel.Text = string.format(T("Status"), T("Robbing")) end
         
-        -- [KRİTİK HAMLE] Platformdan kopmak için önce hafifçe yukarı kaldır, bir kare bekle
         if LocalPlayer.Character then
             local currentCF = LocalPlayer.Character:GetPivot()
             LocalPlayer.Character:PivotTo(currentCF + Vector3.new(0, 5, 0))
-            task.wait() -- 1 Frame bekle
+            task.wait() 
         end
         
-        -- Şimdi aşağıya zorla
         TP(targetSpawner.Position)
-        task.wait(0.25) -- Bekleme süresini artırdım ki server algılasın
+        task.wait(0.25) 
         RemoteEvents.BustStart:InvokeServer(atmModel)
         
-        -- Güvenli alana çek ve bekle
         if StatusLabel then StatusLabel.Text = string.format(T("Status"), T("Cooldown")) end
         TP(safePos)
         task.wait(5.3) 
         
-        -- Tekrar ATM'ye dön ve bitir
-        -- Önce yine hafifçe kaldır
         if LocalPlayer.Character then
             local currentCF = LocalPlayer.Character:GetPivot()
             LocalPlayer.Character:PivotTo(currentCF + Vector3.new(0, 5, 0))
@@ -925,12 +922,11 @@ local function MainLogic()
         
         if StatusLabel then StatusLabel.Text = string.format(T("Status"), T("Cooldown")) end
         TP(targetSpawner.Position)
-        task.wait(0.25) -- Artırıldı
+        task.wait(0.25) 
         RemoteEvents.BustEnd:InvokeServer(atmModel)
         
         task.wait(0.8) 
         
-        -- Artık güvenli alana dönülebilir
         TP(safePos)
         CheckBagLimit(StatusLabel) 
     end
@@ -942,6 +938,125 @@ local function MainLogic()
             if v:FindFirstChild("Owner") and v.Owner.Value == LocalPlayer.Name then return v end 
         end
         return nil 
+    end
+
+    -- [GOD MODE TRACKING SYSTEM - v29.0]
+    -- Bu fonksiyon hedefi ne olursa olsun bulur: Karakter, Koltuk, Araç Sahibi, Pivot
+    local function GetTargetPosition(target)
+        if not target then return nil end
+        
+        local targetCFrame, targetVel, targetType = nil, Vector3.zero, "None"
+        
+        -- 1. YÖNTEM: KOLTUK KONTROLÜ (En Kesini)
+        local char = target.Character
+        if char then
+            local hum = char:FindFirstChild("Humanoid")
+            if hum and hum.SeatPart then
+                return hum.SeatPart.CFrame, hum.SeatPart.AssemblyLinearVelocity, "Seat"
+            end
+        end
+
+        -- 2. YÖNTEM: ARAÇ SAHİBİ ARAMA (Hızlı giden araçlar için God Mode)
+        -- Karakter yüklenmese bile arabası haritadadır. Sahibinden buluruz.
+        local vehicles = Workspace:FindFirstChild("Vehicles")
+        if vehicles then
+            for _, veh in pairs(vehicles:GetChildren()) do
+                local owner = veh:FindFirstChild("Owner")
+                if owner and owner.Value == target.Name then
+                    -- Aracın ana parçası veya sürücü koltuğu
+                    local primary = veh.PrimaryPart or veh:FindFirstChild("VehicleSeat") or veh:FindFirstChildWhichIsA("BasePart", true)
+                    if primary then
+                        return primary.CFrame, primary.AssemblyLinearVelocity, "Vehicle_Owner"
+                    end
+                end
+            end
+        end
+
+        -- 3. YÖNTEM: STANDART KARAKTER
+        if char then
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if root then
+                return root.CFrame, root.AssemblyLinearVelocity, "Root"
+            end
+            
+            -- 4. YÖNTEM: PIVOT (StreamingEnabled kurtarıcısı)
+            -- Karakter var ama parçaları yoksa
+            return char:GetPivot(), Vector3.zero, "Pivot"
+        end
+
+        return nil
+    end
+
+    local function StartTracking(targetPlayer)
+        if TrackingConnection then TrackingConnection:Disconnect() TrackingConnection = nil end
+        
+        Notify(T("SystemTitle"), T("GodModeActive"))
+        
+        TrackingConnection = RunService.Stepped:Connect(function()
+            if not Settings.AutoArrest then 
+                if TrackingConnection then TrackingConnection:Disconnect() TrackingConnection = nil end
+                return 
+            end
+            
+            if not targetPlayer then return end
+            
+            -- HEDEF ANALİZİ
+            local targetCFrame, targetVel, trackType = GetTargetPosition(targetPlayer)
+            
+            if not targetCFrame then 
+                -- Hedef tamamen yoksa bekle
+                return 
+            end
+
+            -- BENİM DURUMUM
+            local myChar = LocalPlayer.Character
+            if not myChar then return end
+            
+            local myRoot = myChar:FindFirstChild("HumanoidRootPart")
+            local myHum = myChar:FindFirstChild("Humanoid")
+            local mySeat = myHum and myHum.SeatPart
+            
+            -- HESAPLAMA (PREDICTION)
+            local speed = targetVel.Magnitude
+            local destCFrame
+            
+            if speed > 200 then
+                -- HIZLI MOD (200+ SPS): Önüne geç (Intercept)
+                -- 0.5 sn ilerisini tahmin et + 40 stud ileri at
+                local futurePos = targetCFrame.Position + (targetVel * 0.5) + (targetVel.Unit * 40)
+                -- Hedefin baktığı yöne bak
+                destCFrame = CFrame.new(futurePos, futurePos + targetVel.Unit) * CFrame.new(0, 3, 0)
+            else
+                -- YAVAŞ MOD: Tepesine bin
+                destCFrame = targetCFrame * CFrame.new(0, 5, 0)
+            end
+
+            -- UYGULAMA (TELEPORT)
+            if mySeat and mySeat.Parent then
+                -- Arabadayız -> Arabayı taşı
+                local vehModel = mySeat.Parent
+                -- Modelin kendisi değilse bir üstünü dene (bazen koltuk model içindedir)
+                if not vehModel:IsA("Model") then vehModel = vehModel.Parent end
+                
+                if vehModel and vehModel:IsA("Model") then
+                    -- Fizik iptali (Çarpışma yok)
+                    for _, p in pairs(vehModel:GetDescendants()) do
+                        if p:IsA("BasePart") then
+                            p.AssemblyLinearVelocity = Vector3.zero
+                            p.AssemblyAngularVelocity = Vector3.zero
+                            p.CanCollide = false
+                        end
+                    end
+                    vehModel:PivotTo(destCFrame)
+                end
+            elseif myRoot then
+                -- Yayayız -> Karakteri taşı
+                myChar:PivotTo(destCFrame)
+                myRoot.AssemblyLinearVelocity = Vector3.zero
+                myRoot.AssemblyAngularVelocity = Vector3.zero
+                if myRoot.CanCollide then myRoot.CanCollide = false end
+            end
+        end)
     end
 
     -- TABS
@@ -1014,7 +1129,6 @@ local function MainLogic()
     local PStatus = PoliceTab:AddLabel("Status")
     PoliceTab:AddButton("Set Job: Police", function() pcall(function() RemoteEvents.JobStart:FireServer("Security", "jobPad") end); Notify("Info", T("JobSet")) end)
     
-    -- Dropdown güncelleme fonksiyonu
     local function GetCriminals()
         local list = {}
         for _, p in pairs(Players:GetPlayers()) do 
@@ -1026,32 +1140,36 @@ local function MainLogic()
     end
 
     local Drop = PoliceTab:AddDropdown("SelectCrim", GetCriminals, "None", function(pName) 
-        PoliceTarget = Players:FindFirstChild(pName)
-        if PoliceTarget then 
+        CurrentTargetPlayer = Players:FindFirstChild(pName)
+        if CurrentTargetPlayer then 
             PStatus.Text = string.format(T("Target"), pName) 
+            -- [GÜNCELLEME] Seçilir seçilmez takibi başlat (Eğer toggle açıksa)
+            if Settings.AutoArrest then
+                 StartTracking(CurrentTargetPlayer)
+            end
         else 
             PStatus.Text = T("NoTarget") 
+            -- Hedef yoksa takibi durdur
+            if TrackingConnection then TrackingConnection:Disconnect() TrackingConnection = nil end
         end 
     end)
     
     PoliceTab:AddButton("Refresh", function() 
-        Drop.Refresh() -- Dropdown'ın içini günceller
+        Drop.Refresh() 
     end)
     
+    -- [GÜNCELLEME] AutoArrest Toggle
     PoliceTab:AddToggle("AutoArrest", false, function(v) 
         Settings.AutoArrest = v
         if v then 
-            -- Yeni döngü mantığı: Target'a bağlı değil, Toggle'a bağlı
-            task.spawn(function() 
-                while Settings.AutoArrest do 
-                    if PoliceTarget and PoliceTarget.Parent and PoliceTarget.Character and PoliceTarget.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
-                        LocalPlayer.Character.HumanoidRootPart.CFrame = PoliceTarget.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,3) 
-                    elseif not PoliceTarget then
-                        -- Hedef yoksa bekle
-                    end
-                    task.wait() 
-                end 
-            end) 
+            if CurrentTargetPlayer then
+                StartTracking(CurrentTargetPlayer)
+            else
+                Notify(T("SystemTitle"), T("SelectTargetFirst"))
+            end
+        else
+            if TrackingConnection then TrackingConnection:Disconnect() TrackingConnection = nil end
+            Notify(T("SystemTitle"), T("AutoArrestStopped"))
         end 
     end)
     
