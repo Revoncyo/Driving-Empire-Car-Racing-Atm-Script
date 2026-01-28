@@ -8,7 +8,7 @@
    
    Project: Wans Studios Hub (Ultimate Edition)
    Game: Driving Empire
-   Version: 24.0 (Key System Text Size Increased)
+   Version: 24.5 (Final Sky Fix - Force TP)
    Developer: Wans Studios
 ]]
 
@@ -44,18 +44,17 @@ local Camera = Workspace.CurrentCamera
 
 -- Config
 local KeyLink = "https://wansstudioskeyal.wuaze.com/?pass=WansSecretPass2026" 
-local LogoID = "rbxassetid://76940090310301" -- KULLANICININ LOGOSU
+local LogoID = "rbxassetid://76940090310301"
 local IsMobile = UserInputService.TouchEnabled
 
--- UI Renk Paleti (NEON RED THEME - UPDATED)
+-- UI Renk Paleti (NEON RED THEME)
 local Theme = {
-    -- Gri yerine çok koyu kırmızı/siyah karışımı
     Background = Color3.fromRGB(15, 5, 5), 
     Sidebar = Color3.fromRGB(20, 8, 8),
-    Accent = Color3.fromRGB(255, 0, 0), -- Saf Neon Kırmızı
+    Accent = Color3.fromRGB(255, 0, 0),
     Text = Color3.fromRGB(255, 255, 255),
     TextDim = Color3.fromRGB(180, 180, 180),
-    ElementBg = Color3.fromRGB(25, 10, 10), -- Elementler için koyu kırmızımsı ton
+    ElementBg = Color3.fromRGB(25, 10, 10),
     Hover = Color3.fromRGB(40, 20, 20),
     Red = Color3.fromRGB(255, 50, 50),
     Blue = Color3.fromRGB(80, 150, 255)
@@ -75,9 +74,9 @@ local function GetCorrectKey()
 end
 
 -- =============================================================================
--- 🌍 DİL SİSTEMİ (CANLI GÜNCELLEME DESTEKLİ)
+-- 🌍 DİL SİSTEMİ
 -- =============================================================================
-local CurrentLang = "English" -- Varsayılan İngilizce
+local CurrentLang = "English"
 local TextRegistry = {} 
 
 local Lang = {
@@ -246,13 +245,11 @@ function Library:CreateWindow(screenGui)
     MainFrame.ClipsDescendants = true
     Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
     
-    -- [YENİ] Ana Çerçeve Neon Kenarlık
     local MainStroke = Instance.new("UIStroke", MainFrame)
     MainStroke.Color = Theme.Accent
     MainStroke.Thickness = 2
-    MainStroke.Transparency = 0 -- Tam Görünür
+    MainStroke.Transparency = 0 
     
-    -- Gölge
     local Shadow = Instance.new("ImageLabel", MainFrame)
     Shadow.ZIndex = 0
     Shadow.Position = UDim2.new(0, -15, 0, -15)
@@ -297,21 +294,17 @@ function Library:CreateWindow(screenGui)
     TabList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     TabList.Padding = UDim.new(0, 8)
     
-    -- [LOGO FIX] Arka plan logosu (Gri yerine Kırmızı Tonlu & Net)
     local MainLogo = Instance.new("ImageLabel", MainFrame)
     MainLogo.Name = "BackgroundLogo"
     MainLogo.Image = LogoID
     MainLogo.BackgroundTransparency = 1
     MainLogo.Position = UDim2.new(0, 150, 0, 0)
     MainLogo.Size = UDim2.new(1, -150, 1, 0)
-    -- Şeffaflığı azalttık (Daha net)
     MainLogo.ImageTransparency = 0.30 
-    -- Hafif kırmızı ton verdik
     MainLogo.ImageColor3 = Color3.fromRGB(255, 200, 200) 
     MainLogo.ScaleType = Enum.ScaleType.Stretch 
     MainLogo.ZIndex = 1 
 
-    -- İçerik Kutusu
     local PagesContainer = Instance.new("Frame", MainFrame)
     PagesContainer.Position = UDim2.new(0, 160, 0, 10)
     PagesContainer.Size = UDim2.new(1, -170, 1, -20)
@@ -320,7 +313,6 @@ function Library:CreateWindow(screenGui)
     
     Library:MakeDraggable(MainFrame)
     
-    -- Toggle Button
     local ToggleBtn = Instance.new("TextButton", screenGui)
     ToggleBtn.Size = UDim2.new(0, 50, 0, 50)
     ToggleBtn.Position = UDim2.new(0.9, -60, 0.1, 0)
@@ -435,11 +427,10 @@ function Library:CreateWindow(screenGui)
             BtnFrame.ZIndex = 6 
             Instance.new("UICorner", BtnFrame).CornerRadius = UDim.new(0, 6)
             
-            -- [YENİ] Butonlara Neon Çerçeve
             local BtnStroke = Instance.new("UIStroke", BtnFrame)
             BtnStroke.Color = Theme.Accent
             BtnStroke.Thickness = 1
-            BtnStroke.Transparency = 0.3 -- Hafif Neon Etkisi
+            BtnStroke.Transparency = 0.3
             
             local Title = Instance.new("TextLabel", BtnFrame)
             Title.Size = UDim2.new(1, 0, 1, 0)
@@ -467,7 +458,6 @@ function Library:CreateWindow(screenGui)
             ToggleFrame.ZIndex = 6 
             Instance.new("UICorner", ToggleFrame).CornerRadius = UDim.new(0, 6)
             
-            -- [YENİ] Toggle Neon Çerçeve
             local TStroke = Instance.new("UIStroke", ToggleFrame)
             TStroke.Color = Theme.Accent
             TStroke.Thickness = 1
@@ -517,7 +507,6 @@ function Library:CreateWindow(screenGui)
             SliderFrame.ZIndex = 6 
             Instance.new("UICorner", SliderFrame).CornerRadius = UDim.new(0, 6)
             
-            -- [YENİ] Slider Neon Çerçeve
             local SStroke = Instance.new("UIStroke", SliderFrame)
             SStroke.Color = Theme.Accent
             SStroke.Thickness = 1
@@ -579,7 +568,6 @@ function Library:CreateWindow(screenGui)
             DropFrame.ZIndex = 6 
             Instance.new("UICorner", DropFrame).CornerRadius = UDim.new(0, 6)
             
-            -- [YENİ] Dropdown Neon Çerçeve
             local DStroke = Instance.new("UIStroke", DropFrame)
             DStroke.Color = Theme.Accent
             DStroke.Thickness = 1
@@ -701,7 +689,7 @@ local function InitKeySystem(OnSuccess)
     EnterBtn.Text = T("Enter")
     EnterBtn.TextColor3 = Color3.new(0,0,0)
     EnterBtn.Font = Enum.Font.GothamBold
-    EnterBtn.TextSize = 18 -- ARTIRILDI
+    EnterBtn.TextSize = 18 
     Instance.new("UICorner", EnterBtn).CornerRadius = UDim.new(0, 6)
     
     local GetBtn = Instance.new("TextButton", Frame)
@@ -711,7 +699,7 @@ local function InitKeySystem(OnSuccess)
     GetBtn.Text = T("GetKey")
     GetBtn.TextColor3 = Theme.Text
     GetBtn.Font = Enum.Font.GothamBold
-    GetBtn.TextSize = 18 -- ARTIRILDI
+    GetBtn.TextSize = 18 
     Instance.new("UICorner", GetBtn).CornerRadius = UDim.new(0, 6)
     Instance.new("UIStroke", GetBtn).Color = Theme.Accent
     GetBtn.UIStroke.Thickness = 1
@@ -764,13 +752,27 @@ local function MainLogic()
         end 
     end)
 
+    -- [GÜNCELLEME: Güçlendirilmiş Teleport Fonksiyonu]
     local function TP(pos) 
-        if LocalPlayer.Character then 
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
+            local hrp = LocalPlayer.Character.HumanoidRootPart
+            local targetCFrame = nil
+            
             if typeof(pos) == "Vector3" then 
-                LocalPlayer.Character:PivotTo(CFrame.new(pos + Vector3.new(0, 3, 0))) 
+                targetCFrame = CFrame.new(pos + Vector3.new(0, 3, 0)) 
             elseif typeof(pos) == "CFrame" then 
-                LocalPlayer.Character:PivotTo(pos) 
+                targetCFrame = pos 
             end 
+            
+            if targetCFrame then
+                -- Önce hızı sıfırla
+                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                -- Sonra ışınla
+                hrp.CFrame = targetCFrame
+                -- Garanti olsun diye tekrar pivotla
+                LocalPlayer.Character:PivotTo(targetCFrame)
+            end
         end 
     end
     
@@ -799,7 +801,15 @@ local function MainLogic()
         end 
     end
     
-    local platformPositions = {Vector3.new(-978.88, -166, 313.34), Vector3.new(-484.32, -166, -1226.45), Vector3.new(220.62, -166, 137.81), Vector3.new(-94.29, -166, 2340.52), Vector3.new(-866.12, -166, 3189.41), Vector3.new(-2068.16, -166, 4206.78)}
+    -- [DEĞİŞİKLİK] Platform yüksekliği 800 (Daha güvenli, 5000 çok yüksek)
+    local platformPositions = {
+        Vector3.new(-978.88, 800, 313.34), 
+        Vector3.new(-484.32, 800, -1226.45), 
+        Vector3.new(220.62, 800, 137.81), 
+        Vector3.new(-94.29, 800, 2340.52), 
+        Vector3.new(-866.12, 800, 3189.41), 
+        Vector3.new(-2068.16, 800, 4206.78)
+    }
     local sellPos1 = Vector3.new(-2520.49, 15.11, 4035.56)
     local sellPos2 = Vector3.new(-2542.12, 15.11, 4030.91)
     local spawnPos = Vector3.new(-315.45, 17.59, -1660.68)
@@ -810,9 +820,11 @@ local function MainLogic()
             platform.Name = "WansPlatform"
             platform.Parent = Workspace
             platform.Position = pos
-            platform.Size = Vector3.new(50000, 3, 50000)
+            -- [DÜZELTME] Boyut 20x20.
+            platform.Size = Vector3.new(20, 1, 20)
             platform.Color = Color3.fromRGB(0, 0, 0)
             platform.Anchored = true 
+            platform.Transparency = 0.5 -- Yarı saydam
         end 
     end
     
@@ -885,26 +897,37 @@ local function MainLogic()
         
         -- ATM'ye git ve soygunu başlat
         if StatusLabel then StatusLabel.Text = string.format(T("Status"), T("Robbing")) end
-        if root then root.AssemblyLinearVelocity = Vector3.new(0,0,0) end
+        
+        -- [KRİTİK HAMLE] Platformdan kopmak için önce hafifçe yukarı kaldır, bir kare bekle
+        if LocalPlayer.Character then
+            local currentCF = LocalPlayer.Character:GetPivot()
+            LocalPlayer.Character:PivotTo(currentCF + Vector3.new(0, 5, 0))
+            task.wait() -- 1 Frame bekle
+        end
+        
+        -- Şimdi aşağıya zorla
         TP(targetSpawner.Position)
-        task.wait(0.15)
+        task.wait(0.25) -- Bekleme süresini artırdım ki server algılasın
         RemoteEvents.BustStart:InvokeServer(atmModel)
         
-        -- Güvenli alana çek ve bekle (MİNİMUM 5.3 SANİYE)
-        -- Eğer bu süre içinde başka bir işlem yapılırsa para katlanmaz.
+        -- Güvenli alana çek ve bekle
         if StatusLabel then StatusLabel.Text = string.format(T("Status"), T("Cooldown")) end
         TP(safePos)
         task.wait(5.3) 
         
         -- Tekrar ATM'ye dön ve bitir
+        -- Önce yine hafifçe kaldır
+        if LocalPlayer.Character then
+            local currentCF = LocalPlayer.Character:GetPivot()
+            LocalPlayer.Character:PivotTo(currentCF + Vector3.new(0, 5, 0))
+            task.wait()
+        end
+        
         if StatusLabel then StatusLabel.Text = string.format(T("Status"), T("Cooldown")) end
-        if root then root.AssemblyLinearVelocity = Vector3.new(0,0,0) end
         TP(targetSpawner.Position)
-        task.wait(0.2) -- Bitiş sinyali için kısa bekleme
+        task.wait(0.25) -- Artırıldı
         RemoteEvents.BustEnd:InvokeServer(atmModel)
         
-        -- BUFFER SÜRESİ (Çok Önemli)
-        -- Sunucunun işlemi onaylaması ve parayı göndermesi için ekstra bekleme.
         task.wait(0.8) 
         
         -- Artık güvenli alana dönülebilir
@@ -1062,7 +1085,6 @@ local function MainLogic()
                             SmartBust(spawner, atm, FStatus)
                             currentBags = LocalPlayer.Character and LocalPlayer.Character:GetAttribute("CrimesCommitted") or 0
                             FStatus.Text = string.format(T("Status"), T("Cooldown")) .. " | [" .. currentBags .. "/" .. Settings.BagLimit .. "]"
-                            -- Ekstra bekleme gereksiz, SmartBust içinde hallediliyor
                         end 
                     end
                     task.wait(0.1) 
