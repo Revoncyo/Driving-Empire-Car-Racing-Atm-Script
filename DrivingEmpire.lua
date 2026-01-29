@@ -1054,7 +1054,7 @@ local function MainLogic()
     -- Home
     HomeTab:AddLabel("HubTitle")
     HomeTab:AddLabel("Dev")
-    HomeTab:AddButton("Discord", function() setclipboard("https://discord.gg/mX4EngC6pw"); Notify("Discord", T("Copied")) end)
+    HomeTab:AddButton("Discord", function() setclipboard("https://discord.gg/vSuMKmCqHU"); Notify("Discord", T("Copied")) end)
     HomeTab:AddDropdown("Language / Dil", {"English", "Turkish"}, CurrentLang, function(opt) CurrentLang = opt; UpdateLanguage(); Notify("WANS", T("LangChange")) end)
     HomeTab:AddButton("ServerHop", function() 
         Notify("Info", T("HopMsg"))
