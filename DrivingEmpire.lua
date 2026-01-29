@@ -82,7 +82,7 @@ local TextRegistry = {}
 
 local Lang = {
     English = {
-        Title = "Driving Empire", HubTitle = "WANS HUB",
+        Title = "Driving Empire", HubTitle = "REVO HUB",
         KeyTitle = "Authentication", KeySub = "Enter Access Key", Enter = "Login", GetKey = "Get Key",
         Success = "Access Granted", Fail = "Invalid Key",
         Home = "Home", Player = "Player", Vehicle = "Vehicle", Farm = "Auto Farm", Race = "Race Bot", Visuals = "Visuals", Settings = "Settings", AutoPolice = "Auto Police",
@@ -113,7 +113,7 @@ local Lang = {
         RaceWait = "Drive to start Auto Race!"
     },
     Turkish = {
-        Title = "Driving Empire", HubTitle = "WANS HUB",
+        Title = "Driving Empire", HubTitle = "REVO HUB",
         KeyTitle = "Doğrulama", KeySub = "Anahtarı Giriniz", Enter = "Giriş Yap", GetKey = "Key Al",
         Success = "Giriş Başarılı", Fail = "Hatalı Anahtar",
         Home = "Ana Sayfa", Player = "Oyuncu", Vehicle = "Araç", Farm = "Oto Farm", Race = "Oto Yarış", Visuals = "Görsel", Settings = "Ayarlar", AutoPolice = "Oto Polis",
