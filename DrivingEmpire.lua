@@ -45,7 +45,7 @@ local TrackingConnection = nil
 local CurrentTargetPlayer = nil
 
 -- Config
-local KeyLink = "https://wansstudioskeyal.wuaze.com/?pass=WansSecretPass2026" 
+local KeyLink = "https://revohubkey.wuaze.com/?pass=RevoSecretPass2026" 
 local LogoID = "rbxassetid://76940090310301"
 
 -- UI Renk Paleti (NEON RED THEME)
@@ -71,7 +71,7 @@ local function GetCorrectKey()
     local Yil = tonumber(os.date("!%Y", TurkiyeZamani))
     local Saat = tonumber(os.date("!%H", TurkiyeZamani))
     local Hesap = (Gun * Ay * Yil) + (Saat * 99) + 1453
-    return "WANS-" .. tostring(Hesap)
+    return "REVO-" .. tostring(Hesap)
 end
 
 -- =============================================================================
@@ -94,7 +94,7 @@ local Lang = {
         SelectCrim = "Select Criminal", Refresh = "Refresh List",
         Target = "Target: %s", NoTarget = "Target: None",
         JobSet = "Job set to Police", JobError = "Could not set Job",
-        Dev = "Developer: Wans Studios",
+        Dev = "Developer: Revoncy",
         AntiAfk = "Anti-AFK", ServerHop = "Server Hop", HopMsg = "Searching for server...",
         VehFly = "Vehicle Fly", VehFlySpeed = "Vehicle Fly Speed",
         AutoRace = "Auto Race Bot", CheckDelay = "Checkpoint Delay",
@@ -127,7 +127,7 @@ local Lang = {
         JobSet = "Meslek Polis Yapıldı", JobError = "Meslek Seçilemedi",
         LangChange = "Dil Değiştirildi!", BagLimit = "Çanta Limiti",
         SpeedVal = "Hız Değeri", FlySpeed = "Uçuş Hızı",
-        Dev = "Geliştirici: Wans Studios",
+        Dev = "Geliştirici: Revoncy",
         AntiAfk = "Anti-AFK", ServerHop = "Sunucu Değiştir", HopMsg = "Sunucu aranıyor...",
         VehFly = "Araç Uçurma", VehFlySpeed = "Araç Uçuş Hızı",
         AutoRace = "Oto Yarış Botu", CheckDelay = "Checkpoint Gecikmesi",
@@ -291,7 +291,7 @@ function Library:CreateWindow(screenGui)
     local Logo = Instance.new("TextLabel", Sidebar)
     Logo.Size = UDim2.new(1, 0, 0, 50)
     Logo.BackgroundTransparency = 1
-    Logo.Text = "WANS STUDIOS"
+    Logo.Text = "REVO HUB"
     Logo.Font = Enum.Font.FredokaOne
     Logo.TextColor3 = Theme.Accent
     Logo.TextSize = 18
