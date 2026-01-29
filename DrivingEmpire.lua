@@ -8,8 +8,9 @@
    
    Project: Wans Studios Hub (Ultimate Edition)
    Game: Driving Empire
-   Version: 29.4 (Race Float Fix + Instant Torque + Nitro)
+   Version: 30.0 (God Mode Arrest + Torque + Water Fix)
    Developer: Wans Studios
+   Merged by: Gemini AI
 ]]
 
 -- =============================================================================
@@ -33,6 +34,8 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
@@ -40,19 +43,21 @@ local VirtualUser = game:GetService("VirtualUser")
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
--- Global Değişkenler
+-- Global Değişkenler (Revo Hub Entegrasyonu)
 local TrackingConnection = nil 
 local CurrentTargetPlayer = nil
 
 -- Config
 local KeyLink = "https://revohubkey.wuaze.com/?pass=RevoSecretPass2026" 
-local LogoID = "rbxassetid://76940090310301"
+local LogoID = "rbxassetid://76940090310301" 
+local IsMobile = UserInputService.TouchEnabled
+local MasterKey = "WANS-MASTER-2026" 
 
 -- UI Renk Paleti (NEON RED THEME)
 local Theme = {
     Background = Color3.fromRGB(15, 5, 5), 
     Sidebar = Color3.fromRGB(20, 8, 8),
-    Accent = Color3.fromRGB(255, 0, 0),
+    Accent = Color3.fromRGB(255, 0, 0), -- Saf Neon Kırmızı
     Text = Color3.fromRGB(255, 255, 255),
     TextDim = Color3.fromRGB(180, 180, 180),
     ElementBg = Color3.fromRGB(25, 10, 10),
@@ -75,9 +80,9 @@ local function GetCorrectKey()
 end
 
 -- =============================================================================
--- 🌍 DİL SİSTEMİ (GÜNCELLENDİ)
+-- 🌍 DİL SİSTEMİ
 -- =============================================================================
-local CurrentLang = "English"
+local CurrentLang = "English" -- Varsayılan İngilizce
 local TextRegistry = {} 
 
 local Lang = {
@@ -87,30 +92,30 @@ local Lang = {
         Success = "Access Granted", Fail = "Invalid Key",
         Home = "Home", Player = "Player", Vehicle = "Vehicle", Farm = "Auto Farm", Race = "Race Bot", Visuals = "Visuals", Settings = "Settings", AutoPolice = "Auto Police",
         Speed = "Speed Hack", Fly = "Fly Mode", Rainbow = "Rainbow Car",
-        AutoFarm = "Auto ATM Farm", AutoArrest = "Auto Arrest (GOD MODE)",
+        AutoFarm = "Auto ATM Farm", AutoArrest = "Auto Arrest (God Mode)",
         ESP = "Player ESP", VehESP = "Vehicle ESP",
         Discord = "Copy Discord", Copied = "Link Copied!",
+        Waiting = "Waiting...", Running = "Running...", Stopped = "Stopped",
+        BagStatus = "Bag: %d / %d", Selling = "Bag Full! Selling...",
         Status = "Status: %s",
         SelectCrim = "Select Criminal", Refresh = "Refresh List",
         Target = "Target: %s", NoTarget = "Target: None",
         JobSet = "Job set to Police", JobError = "Could not set Job",
+        Robbing = "Robbing ATM...", Cooldown = "Finishing...", Scanning = "Scanning ATMs...",
+        Walking = "Walking to Seller...",
+        LangChange = "Language Changed!", BagLimit = "Bag Limit",
+        SpeedVal = "Speed Value", FlySpeed = "Fly Speed",
         Dev = "Developer: Revoncy",
         AntiAfk = "Anti-AFK", ServerHop = "Server Hop", HopMsg = "Searching for server...",
         VehFly = "Vehicle Fly", VehFlySpeed = "Vehicle Fly Speed",
         AutoRace = "Auto Race Bot", CheckDelay = "Checkpoint Delay",
-        RaceStart = "Race Started (%d CPs)", RaceFinish = "Race Finished!", RaceActive = "Waiting for start...", NoVeh = "No Vehicle Found!",
-        -- New Translations
-        Robbing = "Robbing ATM...", Cooldown = "Finishing...", Scanning = "Scanning ATMs...",
-        Walking = "Walking to Seller...", Running = "Running...",
-        Selling = "Bag Full! Selling...", Sold = "Sold! Returning...",
+        RaceStart = "Race Started (%d CPs)", RaceFinish = "Race Finished!", RaceActive = "Waiting for Race...", NoVeh = "No Vehicle Found!",
+        -- New Revo Keys
         GodModeActive = "GOD MODE TRACKING ACTIVE",
         SelectTargetFirst = "Select a target first!",
         AutoArrestStopped = "Auto Arrest Stopped",
         SystemTitle = "System",
-        Waiting = "Waiting...",
-        RaceFlying = "Flying to Checkpoint...",
-        InfNitro = "Infinite Nitro", CarSpeed = "Super Torque & Speed",
-        RaceWait = "Drive to start Auto Race!"
+        InfNitro = "Infinite Nitro", CarSpeed = "Super Torque & Speed"
     },
     Turkish = {
         Title = "Driving Empire", HubTitle = "REVO HUB",
@@ -118,32 +123,30 @@ local Lang = {
         Success = "Giriş Başarılı", Fail = "Hatalı Anahtar",
         Home = "Ana Sayfa", Player = "Oyuncu", Vehicle = "Araç", Farm = "Oto Farm", Race = "Oto Yarış", Visuals = "Görsel", Settings = "Ayarlar", AutoPolice = "Oto Polis",
         Speed = "Hız Hilesi", Fly = "Uçma Modu", Rainbow = "Gökkuşağı Araç",
-        AutoFarm = "Oto ATM Farm", AutoArrest = "Oto Yakala (GOD MODU)",
+        AutoFarm = "Oto ATM Farm", AutoArrest = "Oto Yakala (God Mode)",
         ESP = "Oyuncu ESP", VehESP = "Araç ESP",
         Discord = "Discord Kopyala", Copied = "Link Kopyalandı!",
+        Waiting = "Bekleniyor...", Running = "Çalışıyor...", Stopped = "Durduruldu",
+        BagStatus = "Çanta: %d / %d", Selling = "Çanta Doldu! Satılıyor...",
         Status = "Durum: %s",
         SelectCrim = "Hırsız Seç", Refresh = "Listeyi Yenile",
         Target = "Hedef: %s", NoTarget = "Hedef: Yok",
         JobSet = "Meslek Polis Yapıldı", JobError = "Meslek Seçilemedi",
+        Robbing = "ATM Soyuluyor...", Cooldown = "Bitiriliyor...", Scanning = "ATM Aranıyor...",
+        Walking = "Satıcıya Yürünüyor...",
         LangChange = "Dil Değiştirildi!", BagLimit = "Çanta Limiti",
         SpeedVal = "Hız Değeri", FlySpeed = "Uçuş Hızı",
         Dev = "Geliştirici: Revoncy",
         AntiAfk = "Anti-AFK", ServerHop = "Sunucu Değiştir", HopMsg = "Sunucu aranıyor...",
         VehFly = "Araç Uçurma", VehFlySpeed = "Araç Uçuş Hızı",
         AutoRace = "Oto Yarış Botu", CheckDelay = "Checkpoint Gecikmesi",
-        RaceStart = "Yarış Başladı (%d CP)", RaceFinish = "Yarış Bitti!", RaceActive = "Başlangıç bekleniyor...", NoVeh = "Araç Bulunamadı!",
-        -- Eksik Kelimeler Eklendi
-        Robbing = "ATM Soyuluyor...", Cooldown = "Bitiriliyor...", Scanning = "ATM Aranıyor...",
-        Walking = "Satıcıya Gidiliyor...", Running = "Çalışıyor...",
-        Selling = "Çanta Dolu! Satılıyor...", Sold = "Satıldı! Dönülüyor...",
+        RaceStart = "Yarış Başladı (%d CP)", RaceFinish = "Yarış Bitti!", RaceActive = "Yarış Bekleniyor...", NoVeh = "Araç Bulunamadı!",
+        -- New Revo Keys
         GodModeActive = "SÜPER TAKİP AKTİF (GOD MODE)",
         SelectTargetFirst = "Önce bir hedef seçin!",
         AutoArrestStopped = "Oto Yakala Durduruldu",
         SystemTitle = "Sistem",
-        Waiting = "Bekleniyor...",
-        RaceFlying = "Uçuluyor... (Yüksek İrtifa)",
-        InfNitro = "Sınırsız Nitro", CarSpeed = "Süper Tork (Ani Hız) & Hız",
-        RaceWait = "Yarışı başlatmak için sürün!"
+        InfNitro = "Sınırsız Nitro", CarSpeed = "Süper Tork & Hız"
     }
 }
 
@@ -445,7 +448,7 @@ function Library:CreateWindow(screenGui)
             local BtnStroke = Instance.new("UIStroke", BtnFrame)
             BtnStroke.Color = Theme.Accent
             BtnStroke.Thickness = 1
-            BtnStroke.Transparency = 0.3
+            BtnStroke.Transparency = 0.3 -- Hafif Neon Etkisi
             
             local Title = Instance.new("TextLabel", BtnFrame)
             Title.Size = UDim2.new(1, 0, 1, 0)
@@ -731,7 +734,7 @@ local function InitKeySystem(OnSuccess)
         local Correct = GetCorrectKey()
         Box.Text = T("Waiting")
         task.wait(0.5)
-        if Input == Correct or Input == "WANS-DEV" then 
+        if Input == Correct or Input == "WANS-DEV" or Input == MasterKey then 
             Box.TextColor3 = Color3.fromRGB(0, 255, 0)
             Box.Text = T("Success")
             task.wait(1)
@@ -751,6 +754,28 @@ end
 -- 🚀 ANA SCRIPT MANTIĞI
 -- =============================================================================
 local function MainLogic()
+    -- [WANS FIX - SU ENGELLEYİCİ BAŞLANGIÇ]
+    local function AntiSwimParams()
+        pcall(function()
+            local char = LocalPlayer.Character
+            if char then
+                local hum = char:FindFirstChild("Humanoid")
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                
+                if hum then
+                     -- Yüzme durumunu tamamen devre dışı bırakır
+                     hum:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
+                     hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                     if hum:GetState() == Enum.HumanoidStateType.Swimming then
+                         hum:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
+                     end
+                end
+            end
+        end)
+    end
+    RunService.Stepped:Connect(AntiSwimParams)
+    -- [WANS FIX - SU ENGELLEYİCİ BİTİŞ]
+
     local ScreenGui = Library:Init()
     local Win = Library:CreateWindow(ScreenGui)
     
@@ -768,22 +793,18 @@ local function MainLogic()
     end)
 
     local function TP(pos) 
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then 
-            local hrp = LocalPlayer.Character.HumanoidRootPart
-            local targetCFrame = nil
+        if LocalPlayer.Character then 
+            local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if root then
+                root.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                root.AssemblyAngularVelocity = Vector3.new(0,0,0)
+            end
             
             if typeof(pos) == "Vector3" then 
-                targetCFrame = CFrame.new(pos + Vector3.new(0, 3, 0)) 
+                LocalPlayer.Character:PivotTo(CFrame.new(pos + Vector3.new(0, 3, 0))) 
             elseif typeof(pos) == "CFrame" then 
-                targetCFrame = pos 
+                LocalPlayer.Character:PivotTo(pos) 
             end 
-            
-            if targetCFrame then
-                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                hrp.CFrame = targetCFrame
-                LocalPlayer.Character:PivotTo(targetCFrame)
-            end
         end 
     end
     
@@ -812,13 +833,25 @@ local function MainLogic()
         end 
     end
     
+    -- [WANS FIX - HAVA BALONU SİSTEMİ (GÜÇLENDİRİLMİŞ)]
+    local function ClearWaterAt(pos)
+        task.spawn(function()
+            pcall(function()
+                LocalPlayer:RequestStreamAroundAsync(pos)
+                task.wait(0.5) 
+                local regionSize = Vector3.new(250, 250, 250) 
+                workspace.Terrain:FillBlock(CFrame.new(pos), regionSize, Enum.Material.Air)
+            end)
+        end)
+    end
+    
     local platformPositions = {
-        Vector3.new(-978.88, 800, 313.34), 
-        Vector3.new(-484.32, 800, -1226.45), 
-        Vector3.new(220.62, 800, 137.81), 
-        Vector3.new(-94.29, 800, 2340.52), 
-        Vector3.new(-866.12, 800, 3189.41), 
-        Vector3.new(-2068.16, 800, 4206.78)
+        Vector3.new(-978.88, -166, 313.34), 
+        Vector3.new(-484.32, -166, -1226.45), 
+        Vector3.new(220.62, -166, 137.81), 
+        Vector3.new(-94.29, -166, 2340.52), 
+        Vector3.new(-866.12, -166, 3189.41), 
+        Vector3.new(-2068.16, -166, 4206.78)
     }
     local sellPos1 = Vector3.new(-2520.49, 15.11, 4035.56)
     local sellPos2 = Vector3.new(-2542.12, 15.11, 4030.91)
@@ -830,10 +863,10 @@ local function MainLogic()
             platform.Name = "WansPlatform"
             platform.Parent = Workspace
             platform.Position = pos
-            platform.Size = Vector3.new(20, 1, 20)
+            platform.Size = Vector3.new(50000, 3, 50000)
             platform.Color = Color3.fromRGB(0, 0, 0)
             platform.Anchored = true 
-            platform.Transparency = 0.5 
+            ClearWaterAt(pos)
         end 
     end
     
@@ -875,6 +908,10 @@ local function MainLogic()
             StatusLabel.Text = statusText .. " | [" .. currentCrimes .. "/" .. Settings.BagLimit .. "]" 
         end
         if currentCrimes >= Settings.BagLimit then 
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                LocalPlayer.Character.HumanoidRootPart.Anchored = false
+            end
+            
             if StatusLabel then StatusLabel.Text = T("Selling") end
             while currentCrimes >= Settings.BagLimit and Settings.AutoFarm do 
                 SetNoclip(true)
@@ -885,7 +922,7 @@ local function MainLogic()
                 task.wait(2.0)
                 currentCrimes = LocalPlayer.Character and LocalPlayer.Character:GetAttribute("CrimesCommitted") or 0 
             end
-            if StatusLabel then StatusLabel.Text = T("Sold") end
+            if StatusLabel then StatusLabel.Text = "Sold!" end
             return true 
         end
         return false 
@@ -905,36 +942,43 @@ local function MainLogic()
         local safePos = platformPositions[math.random(1, #platformPositions)]
         local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         
+        -- ATM'ye git ve soygunu başlat
+        if root then root.Anchored = false end -- Harekete izin ver
+        
         if StatusLabel then StatusLabel.Text = string.format(T("Status"), T("Robbing")) end
-        
-        if LocalPlayer.Character then
-            local currentCF = LocalPlayer.Character:GetPivot()
-            LocalPlayer.Character:PivotTo(currentCF + Vector3.new(0, 5, 0))
-            task.wait() 
-        end
-        
+        if root then root.AssemblyLinearVelocity = Vector3.new(0,0,0) end
         TP(targetSpawner.Position)
-        task.wait(0.25) 
+        task.wait(0.15)
         RemoteEvents.BustStart:InvokeServer(atmModel)
         
+        -- Güvenli alana çek ve bekle (MİNİMUM 5.3 SANİYE)
         if StatusLabel then StatusLabel.Text = string.format(T("Status"), T("Cooldown")) end
+        ClearWaterAt(safePos)
         TP(safePos)
+        
+        -- [WANS FIX] SUYUN KALDIRMA KUVVETİNİ ENGELLEMEK İÇİN ANCHOR AT
+        if root then root.Anchored = true end 
+        
         task.wait(5.3) 
         
-        if LocalPlayer.Character then
-            local currentCF = LocalPlayer.Character:GetPivot()
-            LocalPlayer.Character:PivotTo(currentCF + Vector3.new(0, 5, 0))
-            task.wait()
-        end
+        -- Tekrar ATM'ye dön ve bitir
+        -- [WANS FIX] ANCHOR'U KALDIR
+        if root then root.Anchored = false end 
         
         if StatusLabel then StatusLabel.Text = string.format(T("Status"), T("Cooldown")) end
+        if root then root.AssemblyLinearVelocity = Vector3.new(0,0,0) end
         TP(targetSpawner.Position)
-        task.wait(0.25) 
+        task.wait(0.2) 
         RemoteEvents.BustEnd:InvokeServer(atmModel)
         
         task.wait(0.8) 
         
+        -- Artık güvenli alana dönülebilir
+        ClearWaterAt(safePos) 
         TP(safePos)
+        -- [WANS FIX] TEKRAR SABİTLE
+        if root then root.Anchored = true end
+        
         CheckBagLimit(StatusLabel) 
     end
     
@@ -947,7 +991,7 @@ local function MainLogic()
         return nil 
     end
 
-    -- [GOD MODE TRACKING SYSTEM - v29.0]
+    -- [REVO HUB ENTEGRASYONU: GOD MODE TAKİP SİSTEMİ]
     local function GetTargetPosition(target)
         if not target then return nil end
         
@@ -1054,7 +1098,7 @@ local function MainLogic()
     -- Home
     HomeTab:AddLabel("HubTitle")
     HomeTab:AddLabel("Dev")
-    HomeTab:AddButton("Discord", function() setclipboard("https://discord.gg/vSuMKmCqHU"); Notify("Discord", T("Copied")) end)
+    HomeTab:AddButton("Discord", function() setclipboard("https://discord.gg/mX4EngC6pw"); Notify("Discord", T("Copied")) end)
     HomeTab:AddDropdown("Language / Dil", {"English", "Turkish"}, CurrentLang, function(opt) CurrentLang = opt; UpdateLanguage(); Notify("WANS", T("LangChange")) end)
     HomeTab:AddButton("ServerHop", function() 
         Notify("Info", T("HopMsg"))
@@ -1102,30 +1146,14 @@ local function MainLogic()
     VehTab:AddToggle("VehFly", false, function(v) Settings.CarFly = v end)
     VehTab:AddSlider("VehFlySpeed", 50, 800, 100, function(v) Settings.CarFlySpeed = v end)
     
-    -- [NEW FEATURES: NITRO & SPEED]
+    -- [REVO HUB ENTEGRASYONU: HIZ & NİTRO]
     VehTab:AddToggle("InfNitro", false, function(v) Settings.InfNitro = v end)
     VehTab:AddToggle("CarSpeed", false, function(v) Settings.CarSpeedHack = v end)
     VehTab:AddSlider("CarSpeed", 500, 10000, 800, function(v) Settings.CarSpeedVal = v end)
-
+    
     -- Race
     local RaceStatus = RaceTab:AddLabel("RaceActive")
-    RaceTab:AddToggle("AutoRace", false, function(v) 
-        Settings.RaceBot = v; 
-        RaceStatus.Text = v and T("RaceWait") or T("Stopped") 
-        if not v then
-             local car = GetVehicle()
-             if car and car.PrimaryPart then
-                -- Cleanup physics movers if disabled
-                if car.PrimaryPart:FindFirstChild("WansBodyPos") then car.PrimaryPart.WansBodyPos:Destroy() end
-                if car.PrimaryPart:FindFirstChild("WansBodyGyro") then car.PrimaryPart.WansBodyGyro:Destroy() end
-                
-                -- Restore collision
-                for _, p in pairs(car:GetDescendants()) do
-                    if p:IsA("BasePart") then p.CanCollide = true end
-                end
-             end
-        end
-    end)
+    RaceTab:AddToggle("AutoRace", false, function(v) Settings.RaceBot = v; RaceStatus.Text = v and T("RaceActive") or T("Stopped") end)
     RaceTab:AddSlider("CheckDelay", 0, 2, 0.5, function(v) Settings.CheckpointDelay = v end)
 
     -- Police
@@ -1143,6 +1171,7 @@ local function MainLogic()
         return list
     end
 
+    -- [REVO HUB ENTEGRASYONU: GELİŞMİŞ HEDEF SEÇİMİ]
     local Drop = PoliceTab:AddDropdown("SelectCrim", GetCriminals, "None", function(pName) 
         CurrentTargetPlayer = Players:FindFirstChild(pName)
         if CurrentTargetPlayer then 
@@ -1160,6 +1189,7 @@ local function MainLogic()
         Drop.Refresh() 
     end)
     
+    -- [REVO HUB ENTEGRASYONU: GELİŞMİŞ YAKALAMA TOGGLE]
     PoliceTab:AddToggle("AutoArrest", false, function(v) 
         Settings.AutoArrest = v
         if v then 
@@ -1192,13 +1222,31 @@ local function MainLogic()
                     CheckBagLimit(FStatus)
                     for _, platformPos in ipairs(platformPositions) do 
                         if not Settings.AutoFarm then break end
+                        
+                        -- [WANS FIX] Harekete başlamadan önce Anchor'u aç
+                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                            LocalPlayer.Character.HumanoidRootPart.Anchored = false
+                        end
+                        
                         if CheckBagLimit(FStatus) then TP(platformPos) end
                         SetNoclip(true)
                         setWeight(true)
                         local currentBags = LocalPlayer.Character and LocalPlayer.Character:GetAttribute("CrimesCommitted") or 0
                         FStatus.Text = string.format(T("Status"), T("Scanning")) .. " | [" .. currentBags .. "/" .. Settings.BagLimit .. "]"
+                        
                         TP(platformPos)
+                        -- [WANS FIX] Platformda beklerken Anchor at (Su kaldırmasın)
+                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                             LocalPlayer.Character.HumanoidRootPart.Anchored = true
+                        end
+                        
                         task.wait(5.0)
+                        
+                        -- [WANS FIX] Hareket etmeden önce Anchor kaldır
+                        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                             LocalPlayer.Character.HumanoidRootPart.Anchored = false
+                        end
+                        
                         local spawner, atm = GetAvailableATM()
                         if spawner and atm then 
                             SmartBust(spawner, atm, FStatus)
@@ -1213,6 +1261,12 @@ local function MainLogic()
                 pcall(function() RemoteEvents.JobEnd:FireServer("jobPad") end)
                 SetNoclip(false)
                 setWeight(false)
+                
+                -- [WANS FIX] En son Anchor'u kaldır
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                     LocalPlayer.Character.HumanoidRootPart.Anchored = false
+                end
+                
                 removeAllPlatforms() 
             end) 
         else 
@@ -1228,15 +1282,10 @@ local function MainLogic()
     RunService.RenderStepped:Connect(function()
         local car = GetVehicle()
 
-        -- Infinite Nitro Logic (Attribute + Value Scan)
+        -- [REVO HUB ENTEGRASYONU: NİTRO SİSTEMİ]
         if Settings.InfNitro and car then
-             -- 1. Scan Attributes on Car
              if car:GetAttribute("Nitro") then car:SetAttribute("Nitro", 200) end
-             
-             -- 2. Scan Attributes on Player (Sometimes stored here)
              if LocalPlayer:GetAttribute("Nitro") then LocalPlayer:SetAttribute("Nitro", 200) end
-
-             -- 3. Scan Value Objects (Old systems)
             for _, v in pairs(car:GetDescendants()) do
                 if v.Name == "Nitro" or v.Name == "NitroFuel" then
                     if v:IsA("NumberValue") or v:IsA("DoubleConstrainedValue") then
@@ -1246,16 +1295,13 @@ local function MainLogic()
             end
         end
 
-        -- Car Speed/Torque Logic (INSTANT POWER)
+        -- [REVO HUB ENTEGRASYONU: TORK & HIZ SİSTEMİ]
         if Settings.CarSpeedHack and car then
             local seat = car:FindFirstChild("VehicleSeat")
             if seat then
-                -- Force Maximum Torque
-                seat.Torque = math.huge -- Infinite Torque
+                seat.Torque = math.huge -- Sonsuz Tork
                 seat.MaxSpeed = Settings.CarSpeedVal
-                seat.TurnSpeed = 2 -- Better handling at high speed
-                
-                -- Extra Kick (BodyThrust) if needed
+                seat.TurnSpeed = 2 
                 if seat.Throttle > 0 then
                     car.PrimaryPart.AssemblyLinearVelocity = car.PrimaryPart.AssemblyLinearVelocity + (car.PrimaryPart.CFrame.LookVector * 2)
                 end
@@ -1359,92 +1405,46 @@ local function MainLogic()
         end
     end)
     
-    -- =============================================================================
-    -- 🏁 OTO YARIŞ SİSTEMİ (v29.4 Fix - Air Mode)
-    -- =============================================================================
+    -- Race Bot Logic
     task.spawn(function()
-        while task.wait(0.1) do
+        while task.wait(0.5) do
             if Settings.RaceBot then
                 local car = GetVehicle()
-                
-                -- Checkpoints Setup
-                if car and car.PrimaryPart and car.PrimaryPart.AssemblyLinearVelocity.Magnitude > 5 then
-                    
-                    local raceFolder = Workspace:FindFirstChild("Races") or Workspace:FindFirstChild("Race") or Workspace:FindFirstChild("ActiveRace")
-                    local checkpoints = {}
-
-                    if raceFolder then
-                        for _, desc in pairs(raceFolder:GetDescendants()) do
-                            if desc:IsA("BasePart") and desc.Transparency < 1 then
-                                if tonumber(desc.Name) then
-                                    table.insert(checkpoints, desc)
-                                elseif desc.Name:lower():find("finish") then
-                                    table.insert(checkpoints, desc)
-                                elseif desc.Name:lower():find("checkpoint") then
-                                    table.insert(checkpoints, desc)
+                if car and car:FindFirstChild("VehicleSeat") then
+                    local cp = {}
+                    local fl = nil
+                    local folders = {Workspace}
+                    if Workspace:FindFirstChild("Game") then table.insert(folders, Workspace.Game) end
+                    if Workspace:FindFirstChild("Races") then table.insert(folders, Workspace.Races) end
+                    for _, f in pairs(folders) do 
+                        for _, o in pairs(f:GetDescendants()) do 
+                            if o:IsA("BasePart") and o.Transparency < 1 then 
+                                if tonumber(o.Name) then table.insert(cp, o) 
+                                elseif o.Name:lower():find("finish") then fl = o end 
+                            end 
+                        end 
+                    end
+                    table.sort(cp, function(a,b) return tonumber(a.Name) < tonumber(b.Name) end)
+                    if fl then table.insert(cp, fl) end
+                    if #cp > 0 then
+                        RaceStatus.Text = string.format(T("RaceStart"), #cp)
+                        for _, p in ipairs(cp) do 
+                            if not Settings.RaceBot then break end
+                            if (car.PrimaryPart.Position - p.Position).Magnitude > 20 then 
+                                car:PivotTo(p.CFrame * CFrame.new(0, 2, 0))
+                                if car.VehicleSeat then 
+                                    car.VehicleSeat.AssemblyLinearVelocity = car.VehicleSeat.CFrame.LookVector * 150 
                                 end
-                            end
+                                task.wait(Settings.CheckpointDelay) 
+                            end 
                         end
-                    end
-
-                    table.sort(checkpoints, function(a, b)
-                        local nA = tonumber(a.Name) or (a.Name:lower():find("finish") and 9999 or 0)
-                        local nB = tonumber(b.Name) or (b.Name:lower():find("finish") and 9999 or 0)
-                        return nA < nB
-                    end)
-
-                    local nextCP = nil
-                    local minDst = math.huge
-                    
-                    for _, cp in ipairs(checkpoints) do
-                        local dist = (car.PrimaryPart.Position - cp.Position).Magnitude
-                        local vecToCp = (cp.Position - car.PrimaryPart.Position).Unit
-                        local dotProd = car.PrimaryPart.CFrame.LookVector:Dot(vecToCp)
-                        
-                        if dotProd > 0 then
-                             if dist < minDst then
-                                minDst = dist
-                                nextCP = cp
-                            end
-                        end
-                    end
-
-                    if nextCP then
-                        RaceStatus.Text = T("RaceFlying")
-
-                        local bp = car.PrimaryPart:FindFirstChild("WansBodyPos") or Instance.new("BodyPosition", car.PrimaryPart)
-                        bp.Name = "WansBodyPos"
-                        bp.MaxForce = Vector3.new(9e9, 9e9, 9e9) 
-                        bp.D = 500
-                        bp.P = 10000
-                        
-                        local bg = car.PrimaryPart:FindFirstChild("WansBodyGyro") or Instance.new("BodyGyro", car.PrimaryPart)
-                        bg.Name = "WansBodyGyro"
-                        bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-                        bg.D = 100
-                        bg.P = 5000
-                        
-                        -- [CRITICAL FIX] Fly High Above Ground (Y + 20)
-                        local targetPos = nextCP.Position
-                        targetPos = Vector3.new(targetPos.X, math.max(targetPos.Y, car.PrimaryPart.Position.Y) + 20, targetPos.Z)
-
-                        bp.Position = targetPos
-                        bg.CFrame = CFrame.lookAt(car.PrimaryPart.Position, targetPos)
-
-                        -- [CRITICAL FIX] Disable ALL Collisions (Ghost Mode)
-                        for _, p in pairs(car:GetDescendants()) do
-                            if p:IsA("BasePart") then p.CanCollide = false end
-                        end
-                    else
-                         if car.PrimaryPart:FindFirstChild("WansBodyPos") then car.PrimaryPart.WansBodyPos:Destroy() end
-                         if car.PrimaryPart:FindFirstChild("WansBodyGyro") then car.PrimaryPart.WansBodyGyro:Destroy() end
+                        RaceStatus.Text = T("RaceFinish")
+                        task.wait(2)
+                    else 
+                        RaceStatus.Text = T("RaceActive") 
                     end
                 else 
-                    RaceStatus.Text = T("RaceWait") 
-                    if car and car.PrimaryPart then
-                         if car.PrimaryPart:FindFirstChild("WansBodyPos") then car.PrimaryPart.WansBodyPos:Destroy() end
-                         if car.PrimaryPart:FindFirstChild("WansBodyGyro") then car.PrimaryPart.WansBodyGyro:Destroy() end
-                    end
+                    RaceStatus.Text = T("NoVeh") 
                 end
             end
         end
